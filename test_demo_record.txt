@@ -1,0 +1,1 @@
+playdemo .\test\2019.10.14-12.00.55\d1_canals_06.dem; demo_timescale 10
