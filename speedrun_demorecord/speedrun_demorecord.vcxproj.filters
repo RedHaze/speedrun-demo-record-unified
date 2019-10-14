@@ -15,80 +15,80 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="$(SDK_2013_DIR)\src\lib\public\tier0.lib">
+    <Library Include="$(SDK_DIR_SRC)\lib\public\tier0.lib">
       <Filter>Link Libraries</Filter>
     </Library>
-    <Library Include="$(SDK_2013_DIR)\src\lib\public\tier1.lib">
+    <Library Include="$(SDK_DIR_SRC)\lib\public\tier1.lib">
       <Filter>Link Libraries</Filter>
     </Library>
-    <Library Include="$(SDK_2013_DIR)\src\lib\public\tier2.lib">
+    <Library Include="$(SDK_DIR_SRC)\lib\public\tier2.lib">
       <Filter>Link Libraries</Filter>
     </Library>
-    <Library Include="$(SDK_2013_DIR)\src\lib\public\vstdlib.lib">
+    <Library Include="$(SDK_DIR_SRC)\lib\public\vstdlib.lib">
       <Filter>Link Libraries</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\tier0\basetypes.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\tier0\basetypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\Color.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\Color.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\tier0\dbg.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\tier0\dbg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\eiface.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\eiface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\filesystem.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\filesystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\tier0\icommandline.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\tier0\icommandline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\igameevents.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\igameevents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\tier1\interface.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\tier1\interface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\game\server\iplayerinfo.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\game\server\iplayerinfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\engine\iserverplugin.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\engine\iserverplugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\tier1\KeyValues.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\tier1\KeyValues.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\tier0\mem.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\tier0\mem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\tier0\memalloc.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\tier0\memalloc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\tier0\memdbgon.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\tier0\memdbgon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\tier1\strtools.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\tier1\strtools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\tier1\utlbuffer.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\tier1\utlbuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\tier1\utlmemory.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\tier1\utlmemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\tier1\utlvector.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\tier1\utlvector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(SDK_2013_DIR)\src\public\vstdlib\vstdlib.h">
+    <ClInclude Include="$(SDK_DIR_SRC)\public\vstdlib\vstdlib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(SDK_2013_DIR)\src\public\tier0\memoverride.cpp">
+    <ClCompile Include="$(SDK_DIR_SRC)\public\tier0\memoverride.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="speedrun_demorecord.cpp">
@@ -98,7 +98,7 @@
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="$(SDK_2013_DIR)\src\public\tier0\pointeroverride.asm">
+    <CustomBuild Include="$(SDK_DIR_SRC)\public\tier0\pointeroverride.asm">
       <Filter>Source Files</Filter>
     </CustomBuild>
     <CustomBuild Include="speedrun_demorecord.vpc">
@@ -106,34 +106,34 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(SDK_2013_DIR)\src\vpc_scripts\loadaddress.vpc">
+    <None Include="$(SDK_DIR_SRC)\vpc_scripts\loadaddress.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
-    <None Include="$(SDK_2013_DIR)\src\vpc_scripts\platform_dirs.vpc">
+    <None Include="$(SDK_DIR_SRC)\vpc_scripts\platform_dirs.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
-    <None Include="$(SDK_2013_DIR)\src\vpc_scripts\source_base.vpc">
+    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_base.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
-    <None Include="$(SDK_2013_DIR)\src\vpc_scripts\source_dll_base.vpc">
+    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_dll_base.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
-    <None Include="$(SDK_2013_DIR)\src\vpc_scripts\source_dll_win32_base.vpc">
+    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_dll_win32_base.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
-    <None Include="$(SDK_2013_DIR)\src\vpc_scripts\source_dll_win32_debug.vpc">
+    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_dll_win32_debug.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
-    <None Include="$(SDK_2013_DIR)\src\vpc_scripts\source_dll_win32_release.vpc">
+    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_dll_win32_release.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
-    <None Include="$(SDK_2013_DIR)\src\vpc_scripts\source_video_base.vpc">
+    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_video_base.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
-    <None Include="$(SDK_2013_DIR)\src\vpc_scripts\source_win32_base.vpc">
+    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_win32_base.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
-    <None Include="$(SDK_2013_DIR)\src\vpc_scripts\version.vpc">
+    <None Include="$(SDK_DIR_SRC)\vpc_scripts\version.vpc">
       <Filter>VPC Scripts</Filter>
     </None>
   </ItemGroup>
