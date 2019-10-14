@@ -1,12 +1,5 @@
 //===== Copyright © 1996-2008, Valve Corporation, All rights reserved. ======//
 //
-// Purpose: 
-// +Bookmark mode?
-// +Fix demo overwrite
-// -Timer
-// -Check for valid directory ./lol/ or ./ or ./lol/lol2/ NOT! /lol or /lol/ or lol
-// +Speedrun resume on game crash, make text file with current map/ retry/ session dir at start of level? what if it crashes on level change?? this will be kinda hard to make.
-//  kinda made, wanna incorporate ability to load last save automatically
 // $NoKeywords: $
 //
 //===========================================================================//
@@ -34,7 +27,7 @@
 #include "tier0/memdbgon.h"
 
 #define BOOKMARK_SOUND_FILE "ambient/creatures/teddy.wav"
-//#define NEW_ENGINE
+#define NEW_ENGINE
 // MAKE SURE TO CHANGE CDLL_INT.H TO NEW ENGINE VERSION BEFORE COMPILING NEW ENGINE!
 
 // Interfaces from the engine
