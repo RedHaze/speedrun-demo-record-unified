@@ -41,15 +41,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">.\Debug\.\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">.\Debug\.\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">.\$(Configuration)\.\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">.\$(Configuration)\.\</IntDir>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">.dll</TargetExt>
     <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">$(SDK_DIR_SRC)\devtools\vstools;$(ExecutablePath);$(Path)</ExecutablePath>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">false</GenerateManifest>
     <PostBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">true</PostBuildEventUseInBuild>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">.\Release\.\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">.\Release\.\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">.\$(Configuration)\.\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">.\$(Configuration)\.\</IntDir>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">.dll</TargetExt>
     <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">$(SDK_DIR_SRC)\devtools\vstools;$(ExecutablePath);$(Path)</ExecutablePath>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">false</LinkIncremental>
