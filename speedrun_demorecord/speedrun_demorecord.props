@@ -4,6 +4,7 @@
   <PropertyGroup Label="UserMacros">
     <SDK_DIR_SRC>$(SDK_2013_DIR)\src</SDK_DIR_SRC>
     <SDK_DIR_ROOT>$(SDK_2013_DIR)</SDK_DIR_ROOT>
+    <GAME_HL2_DIR>$(GAME_2013_HL2_DIR)</GAME_HL2_DIR>
   </PropertyGroup>
   <PropertyGroup>
     <_PropertySheetDisplayName>speedrun_demorecord</_PropertySheetDisplayName>
@@ -18,8 +19,11 @@
       <Value>$(SDK_DIR_ROOT)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
+    <BuildMacro Include="GAME_HL2_DIR">
+      <Value>$(GAME_HL2_DIR)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
   </ItemGroup>
-  
   <!-- HL2 Debug Settings -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">
     <LocalDebuggerCommand>$(GAME_HL2_DIR)\hl2.exe</LocalDebuggerCommand>
