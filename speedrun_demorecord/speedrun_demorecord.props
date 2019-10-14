@@ -19,4 +19,18 @@
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>
+  
+  <!-- HL2 Debug Settings -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">
+    <LocalDebuggerCommand>$(GAME_HL2_DIR)\hl2.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-game hl2 -novid -allowdebug +plugin_load speedrun_demorecord +speedrun_dir ./test/ +speedrun_map d1_canals_06</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(GAME_HL2_DIR)\hl2</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">
+    <LocalDebuggerCommand>$(GAME_HL2_DIR)\hl2.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-game hl2 -novid -allowdebug +plugin_load speedrun_demorecord +speedrun_dir ./test/ +speedrun_map d1_canals_06</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(GAME_HL2_DIR)\hl2</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
 </Project>
