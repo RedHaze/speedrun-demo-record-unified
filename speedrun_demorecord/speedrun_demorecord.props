@@ -5,7 +5,9 @@
     <SDK_DIR_SRC>$(SDK_2013_DIR)\src</SDK_DIR_SRC>
     <SDK_DIR_ROOT>$(SDK_2013_DIR)</SDK_DIR_ROOT>
   </PropertyGroup>
-  <PropertyGroup />
+  <PropertyGroup>
+    <_PropertySheetDisplayName>speedrun_demorecord</_PropertySheetDisplayName>
+  </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup>
     <BuildMacro Include="SDK_DIR_SRC">
