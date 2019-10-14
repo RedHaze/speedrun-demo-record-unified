@@ -10,9 +10,6 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{BA03E055-4FA2-FCE3-8A1C-D348547D379C}</UniqueIdentifier>
     </Filter>
-    <Filter Include="VPC Scripts">
-      <UniqueIdentifier>{A40EE377-781A-C6B9-0C7C-B3BE118D248E}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="$(SDK_DIR_SRC)\lib\public\tier0.lib">
@@ -101,40 +98,5 @@
     <CustomBuild Include="$(SDK_DIR_SRC)\public\tier0\pointeroverride.asm">
       <Filter>Source Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="speedrun_demorecord.vpc">
-      <Filter>VPC Scripts</Filter>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\loadaddress.vpc">
-      <Filter>VPC Scripts</Filter>
-    </None>
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\platform_dirs.vpc">
-      <Filter>VPC Scripts</Filter>
-    </None>
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_base.vpc">
-      <Filter>VPC Scripts</Filter>
-    </None>
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_dll_base.vpc">
-      <Filter>VPC Scripts</Filter>
-    </None>
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_dll_win32_base.vpc">
-      <Filter>VPC Scripts</Filter>
-    </None>
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_dll_win32_debug.vpc">
-      <Filter>VPC Scripts</Filter>
-    </None>
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_dll_win32_release.vpc">
-      <Filter>VPC Scripts</Filter>
-    </None>
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_video_base.vpc">
-      <Filter>VPC Scripts</Filter>
-    </None>
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_win32_base.vpc">
-      <Filter>VPC Scripts</Filter>
-    </None>
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\version.vpc">
-      <Filter>VPC Scripts</Filter>
-    </None>
   </ItemGroup>
 </Project>

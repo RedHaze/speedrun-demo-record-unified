@@ -45,8 +45,6 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">.\Debug\.\</IntDir>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">.dll</TargetExt>
     <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">$(SDK_DIR_SRC)\devtools\vstools;$(ExecutablePath);$(Path)</ExecutablePath>
-    <PreBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">true</PreBuildEventUseInBuild>
-    <PreLinkEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">true</PreLinkEventUseInBuild>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">false</GenerateManifest>
     <PostBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">true</PostBuildEventUseInBuild>
@@ -54,20 +52,14 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">.\Release\.\</IntDir>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">.dll</TargetExt>
     <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">$(SDK_DIR_SRC)\devtools\vstools;$(ExecutablePath);$(Path)</ExecutablePath>
-    <PreBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">true</PreBuildEventUseInBuild>
-    <PreLinkEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">true</PreLinkEventUseInBuild>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">false</GenerateManifest>
     <PostBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">
     <PreBuildEvent>
-      <Command>if EXIST %SDK_DIR_ROOT%\game\bin\.\$(TargetFileName) for /f "delims=" %%A in ('attrib "%SDK_DIR_ROOT%\game\bin\.\$(TargetFileName)"') do set valveTmpIsReadOnly="%%A"
-set valveTmpIsReadOnlyLetter=%valveTmpIsReadOnly:~6,1%
-if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
-if exist "%SDK_DIR_SRC%\devtools\bin\vpc.exe" "%SDK_DIR_SRC%\devtools\bin\vpc.exe" -crc2 "speedrun_demorecord.vcxproj"
-if ERRORLEVEL 1 exit /b 1
-</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
     <ClCompile>
       <AdditionalOptions>/Zm200 /Gw</AdditionalOptions>
@@ -148,19 +140,17 @@ del /q "$(TargetDir)$(TargetFileName)"
 exit 1
 :BuildEventOK
 
-copy "$(TargetDir)$(TargetFileName)" "$(LocalDebuggerWorkingDirectory)\$(TargetFileName)"</Command>
+echo Copying DLL to Game Directory...
+copy "$(TargetDir)$(TargetFileName)" "$(LocalDebuggerWorkingDirectory)\$(TargetFileName)"
+</Command>
     </PostBuildEvent>
     <CustomBuildStep>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">
     <PreBuildEvent>
-      <Command>if EXIST %SDK_DIR_ROOT%\game\bin\.\$(TargetFileName) for /f "delims=" %%A in ('attrib "%SDK_DIR_ROOT%\game\bin\.\$(TargetFileName)"') do set valveTmpIsReadOnly="%%A"
-set valveTmpIsReadOnlyLetter=%valveTmpIsReadOnly:~6,1%
-if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
-if exist "%SDK_DIR_SRC%\devtools\bin\vpc.exe" "%SDK_DIR_SRC%\devtools\bin\vpc.exe" -crc2 "speedrun_demorecord.vcxproj"
-if ERRORLEVEL 1 exit /b 1
-</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
     <ClCompile>
       <AdditionalOptions>/Zm200 /d2Zi+ /Gw</AdditionalOptions>
@@ -245,6 +235,9 @@ echo *** ERROR! PostBuildStep FAILED for $(ProjectName)! EXE or DLL is probably 
 del /q "$(TargetDir)$(TargetFileName)"
 exit 1
 :BuildEventOK
+
+echo Copying DLL to Game Directory...
+copy "$(TargetDir)$(TargetFileName)" "$(LocalDebuggerWorkingDirectory)\$(TargetFileName)"
 </Command>
     </PostBuildEvent>
     <CustomBuildStep>
@@ -295,30 +288,6 @@ exit 1
       <Command Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">"$(VCInstallDir)bin\ml.exe" /safeseh /c /Cp /Zi /Fo"$(IntDir)\%(Filename).obj" "%(FullPath)"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">$(IntDir)\%(Filename).obj</Outputs>
     </CustomBuild>
-    <CustomBuild Include="speedrun_demorecord.vpc">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">Running VPC CRC Check - speedrun_demorecord.vpc</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">if exist "%SDK_DIR_SRC%\devtools\bin\vpc.exe" "%SDK_DIR_SRC%\devtools\bin\vpc.exe" -crc2 "speedrun_demorecord.vcxproj"
-if ERRORLEVEL 1 exit /b 1
-echo crc_complete &gt; E:\LLVM\source-sdk-2013\sp\src\utils\speedrun_demorecord\speedrun_demorecord.vpc.sentinel</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'">E:\LLVM\source-sdk-2013\sp\src\utils\speedrun_demorecord\speedrun_demorecord.vpc.sentinel</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">Running VPC CRC Check - speedrun_demorecord.vpc</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">if exist "%SDK_DIR_SRC%\devtools\bin\vpc.exe" "%SDK_DIR_SRC%\devtools\bin\vpc.exe" -crc2 "speedrun_demorecord.vcxproj"
-if ERRORLEVEL 1 exit /b 1
-echo crc_complete &gt; E:\LLVM\source-sdk-2013\sp\src\utils\speedrun_demorecord\speedrun_demorecord.vpc.sentinel</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release 2013|Win32'">E:\LLVM\source-sdk-2013\sp\src\utils\speedrun_demorecord\speedrun_demorecord.vpc.sentinel</Outputs>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\loadaddress.vpc" />
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\platform_dirs.vpc" />
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_base.vpc" />
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_dll_base.vpc" />
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_dll_win32_base.vpc" />
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_dll_win32_debug.vpc" />
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_dll_win32_release.vpc" />
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_video_base.vpc" />
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\source_win32_base.vpc" />
-    <None Include="$(SDK_DIR_SRC)\vpc_scripts\version.vpc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
