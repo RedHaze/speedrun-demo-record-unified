@@ -127,11 +127,11 @@
     </Bscmake>
     <PostBuildEvent>
       <Message>Publishing to $(SDK_DIR_ROOT)\game\bin\.</Message>
-      <Command>if not exist "%SDK_DIR_ROOT%\game\bin\." mkdir "%SDK_DIR_ROOT%\game\bin\."
-copy "$(TargetDir)$(TargetFileName)" "%SDK_DIR_ROOT%\game\bin\.\$(TargetFileName)"
+      <Command>if not exist "$(SDK_DIR_ROOT)\game\bin\." mkdir "$(SDK_DIR_ROOT)\game\bin\."
+copy "$(TargetDir)$(TargetFileName)" "$(SDK_DIR_ROOT)\game\bin\.\$(TargetFileName)"
 if ERRORLEVEL 1 goto BuildEventFailed
-if exist "$(TargetDir)$(TargetName).map" copy "$(TargetDir)$(TargetName).map" %SDK_DIR_ROOT%\game\bin\.\$(TargetName).map
-copy "$(TargetDir)$(TargetName).pdb" %SDK_DIR_ROOT%\game\bin\.\$(TargetName).pdb
+if exist "$(TargetDir)$(TargetName).map" copy "$(TargetDir)$(TargetName).map" $(SDK_DIR_ROOT)\game\bin\.\$(TargetName).map
+copy "$(TargetDir)$(TargetName).pdb" $(SDK_DIR_ROOT)\game\bin\.\$(TargetName).pdb
 if ERRORLEVEL 1 goto BuildEventFailed
 goto BuildEventOK
 :BuildEventFailed
@@ -223,11 +223,11 @@ copy "$(TargetDir)$(TargetFileName)" "$(LocalDebuggerWorkingDirectory)\$(TargetF
     </Bscmake>
     <PostBuildEvent>
       <Message>Publishing to $(SDK_DIR_ROOT)\game\bin\.</Message>
-      <Command>if not exist "%SDK_DIR_ROOT%\game\bin\." mkdir "%SDK_DIR_ROOT%\game\bin\."
-copy "$(TargetDir)$(TargetFileName)" "%SDK_DIR_ROOT%\game\bin\.\$(TargetFileName)"
+      <Command>if not exist "$(SDK_DIR_ROOT)\game\bin\." mkdir "$(SDK_DIR_ROOT)\game\bin\."
+copy "$(TargetDir)$(TargetFileName)" "$(SDK_DIR_ROOT)\game\bin\.\$(TargetFileName)"
 if ERRORLEVEL 1 goto BuildEventFailed
-if exist "$(TargetDir)$(TargetName).map" copy "$(TargetDir)$(TargetName).map" %SDK_DIR_ROOT%\game\bin\.\$(TargetName).map
-copy "$(TargetDir)$(TargetName).pdb" %SDK_DIR_ROOT%\game\bin\.\$(TargetName).pdb
+if exist "$(TargetDir)$(TargetName).map" copy "$(TargetDir)$(TargetName).map" $(SDK_DIR_ROOT)\game\bin\.\$(TargetName).map
+copy "$(TargetDir)$(TargetName).pdb" $(SDK_DIR_ROOT)\game\bin\.\$(TargetName).pdb
 if ERRORLEVEL 1 goto BuildEventFailed
 goto BuildEventOK
 :BuildEventFailed
