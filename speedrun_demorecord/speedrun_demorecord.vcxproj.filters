@@ -83,6 +83,9 @@
     <ClInclude Include="$(SDK_DIR_SRC)\public\vstdlib\vstdlib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="speedrun_demorecord.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SDK_DIR_SRC)\public\tier0\memoverride.cpp">

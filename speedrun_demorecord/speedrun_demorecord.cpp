@@ -4,104 +4,53 @@
 //
 //===========================================================================//
 
-#include <stdio.h>
-#include <string>
-#include <algorithm>
-#include <time.h>
-
-#include "interface.h"
-#include "filesystem.h"
-#include "eiface.h"
-#include "engine/iserverplugin.h"
-#include "game/server/iplayerinfo.h"
-#include "engine/IEngineSound.h"
-#include "convar.h"
-#include "tier2/tier2.h"
-
-#include "tier1/utllinkedlist.h"
-#include "utlbuffer.h"
-
-#include "cdll_int.h"
+#include "speedrun_demorecord.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgoff.h"
 
+#ifdef SSDK2013
 #define BOOKMARK_SOUND_FILE "ambient/creatures/teddy.wav"
-//#define NEW_ENGINE
-// MAKE SURE TO CHANGE CDLL_INT.H TO NEW ENGINE VERSION BEFORE COMPILING NEW ENGINE!
-
-// Interfaces from the engine
-IVEngineServer	*engine = NULL; // helper functions (messaging clients, loading content, making entities, running commands, etc)
-IVEngineClient	*clientEngine = NULL;
-IEngineSound	*soundEngine = NULL;
-IFileSystem		*filesystem = NULL; //Filesystem for I/O, use this instead of fopen and whatnot
-IPlayerInfoManager *playerinfomanager = NULL; // game dll interface to interact with players
-CGlobalVars *gpGlobals = NULL;
-
-//GlobalVars
-int recordMode;  //Record Modes
-//-1 = disabled
-// 0 = standard speedrun (deaths/reloads/etc)
-// 1 = segmenting mode (mainly one map, on map level changes do not stop recording!)
-int retrys;
-std::string lastMapName;
-char sessionDir[256];
-char currentDemoName[256];
-CUtlBuffer bookmarkBuffer;
-CUtlBuffer resumeBuffer;
-
-//Function Init
-void findFirstMap();
-void pathExists();
-void GetDateAndTime(struct tm &ltime);
-void ConvertTimeToLocalTime(const time_t &t, struct tm &ltime);
-int demoExists(const char* curMap);
+#endif
 
 // useful helper func
 inline bool FStrEq(const char *sz1, const char *sz2)
 {
 	return(Q_stricmp(sz1, sz2) == 0);
 }
-//---------------------------------------------------------------------------------
-// Purpose: plugin class
-//---------------------------------------------------------------------------------
-class CSpeedrunDemoRecord : public IServerPluginCallbacks
+
+#if defined(SSDK2006)
+static ICvar *s_pCVar;
+
+class CPluginConVarAccessor : public IConCommandBaseAccessor
 {
 public:
-	CSpeedrunDemoRecord();
-	~CSpeedrunDemoRecord();
+	virtual bool	RegisterConCommandBase(ConCommandBase *pCommand)
+	{
+		pCommand->AddFlags(FCVAR_PLUGIN);
 
-	// IServerPluginCallbacks methods
-	virtual bool			Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory);
-	virtual void			Unload(void);
-	virtual void			Pause(void);
-	virtual void			UnPause(void);
-	virtual const char     *GetPluginDescription(void);
-	virtual void			LevelInit(char const *pMapName);
-	virtual void			ServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
-	virtual void			GameFrame(bool simulating);
-	virtual void			LevelShutdown(void);
-	virtual void			ClientActive(edict_t *pEntity);
-	virtual void			ClientDisconnect(edict_t *pEntity);
-	virtual void			ClientPutInServer(edict_t *pEntity, char const *playername);
-	virtual void			SetCommandClient(int index);
-	virtual void			ClientSettingsChanged(edict_t *pEdict);
-	virtual PLUGIN_RESULT	ClientConnect(bool *bAllowConnect, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
-	virtual PLUGIN_RESULT	ClientCommand(edict_t *pEntity, const CCommand &args);
-	virtual PLUGIN_RESULT	NetworkIDValidated(const char *pszUserName, const char *pszNetworkID);
-	virtual void			OnQueryCvarValueFinished(QueryCvarCookie_t iCookie, edict_t *pPlayerEntity, EQueryCvarValueStatus eStatus, const char *pCvarName, const char *pCvarValue);
+		// Unlink from plugin only list
+		pCommand->SetNext(0);
 
-	// added with version 3 of the interface.
-	virtual void			OnEdictAllocated(edict_t *edict);
-	virtual void			OnEdictFreed(const edict_t *edict);
-
-	virtual int GetCommandIndex() { return m_iClientCommandIndex; }
-private:
-	int m_iClientCommandIndex;
+		// Link to engine's list instead
+		s_pCVar->RegisterConCommandBase(pCommand);
+		return true;
+	}
 
 };
 
-//http://hlssmod.net/he_code/game/client/cdll_client_int.cpp??
+CPluginConVarAccessor g_ConVarAccessor;
+
+void InitCVars(CreateInterfaceFn cvarFactory)
+{
+	s_pCVar = (ICvar*)cvarFactory(VENGINE_CVAR_INTERFACE_VERSION, NULL);
+	if (s_pCVar)
+	{
+		ConCommandBaseMgr::OneTimeInit(&g_ConVarAccessor);
+	}
+}
+#endif
+
 //---------------------------------------------------------------------------------
 // Purpose: place to hold demos!
 //---------------------------------------------------------------------------------
@@ -120,12 +69,15 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CSpeedrunDemoRecord, IServerPluginCallbacks, I
 //---------------------------------------------------------------------------------
 CSpeedrunDemoRecord::CSpeedrunDemoRecord()
 {
-	m_iClientCommandIndex = 0;
-	recordMode = -1;
-	retrys = 0;
-	lastMapName = "";
-	bookmarkBuffer.SetBufferType(true, true);
+	recordMode = DEMREC_DISABLED;
+	retries = 0;
+	lastMapName = "UNKNOWN_MAP";
+	currentMapName = "UNKNOWN_MAP";
 	resumeBuffer.SetBufferType(true, true);
+
+#ifdef SSDK2013
+	bookmarkBuffer.SetBufferType(true, true);
+#endif
 }
 
 CSpeedrunDemoRecord::~CSpeedrunDemoRecord()
@@ -140,40 +92,40 @@ bool CSpeedrunDemoRecord::Load(CreateInterfaceFn interfaceFactory, CreateInterfa
 	ConnectTier1Libraries(&interfaceFactory, 1);
 	ConnectTier2Libraries(&interfaceFactory, 1);
 
-	playerinfomanager = (IPlayerInfoManager *)gameServerFactory(INTERFACEVERSION_PLAYERINFOMANAGER, NULL);
-	if (!playerinfomanager)
-	{
-		Warning("Unable to load playerinfomanager, ignoring\n"); // this isn't fatal, we just won't be able to access specific player data
-	}
-
 	engine = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
 	clientEngine = (IVEngineClient *)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
-	soundEngine = (IEngineSound*)interfaceFactory(IENGINESOUND_CLIENT_INTERFACE_VERSION, NULL);
 
-	//CLIENT_DLL_INTERFACE_VERSION: 4104 = VClient015
-	//								5135 = VClient015
-	//							src 2013 = VClient017
+	// CLIENT_DLL_INTERFACE_VERSION: 4104 = VClient015
+	//								 5135 = VClient015
+	//							 src 2013 = VClient017
 
 	filesystem = (IFileSystem*)interfaceFactory(FILESYSTEM_INTERFACE_VERSION, NULL);
 
 	// get the interfaces we want to use
-	if (!(engine && clientEngine && soundEngine && filesystem && g_pFullFileSystem))
+	if (!(engine && clientEngine && filesystem && g_pFullFileSystem))
 	{
 		return false; // we require all these interface to function
 	}
 
-	if (playerinfomanager)
-	{
-		gpGlobals = playerinfomanager->GetGlobalVars();
+#ifdef SSDK2013
+	soundEngine = (IEngineSound*)interfaceFactory(IENGINESOUND_CLIENT_INTERFACE_VERSION, NULL);
+	if (!soundEngine) {
+		return false;
 	}
 
 	soundEngine->PrecacheSound(BOOKMARK_SOUND_FILE);
+#endif
 
+#if defined(SSDK2006)
+	// register any cvars we have defined
+	InitCVars(interfaceFactory);
+#else
 	ConVar_Register(0);
+#endif
 
 	findFirstMap();
 
-	ConColorMsg(Color(0, 255, 0, 255), "Speedrun_demorecord Loaded\n");
+	DemRecMsg(Color(0, 255, 0, 255), "Speedrun_demorecord Loaded\n");
 
 	return true;
 }
@@ -183,23 +135,12 @@ bool CSpeedrunDemoRecord::Load(CreateInterfaceFn interfaceFactory, CreateInterfa
 //---------------------------------------------------------------------------------
 void CSpeedrunDemoRecord::Unload(void)
 {
+#if !defined(SSDK2006)
 	ConVar_Unregister();
+#endif
+
 	DisconnectTier2Libraries();
 	DisconnectTier1Libraries();
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: called when the plugin is paused (i.e should stop running but isn't unloaded)
-//---------------------------------------------------------------------------------
-void CSpeedrunDemoRecord::Pause(void)
-{
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: called when the plugin is unpaused (i.e should start executing again)
-//---------------------------------------------------------------------------------
-void CSpeedrunDemoRecord::UnPause(void)
-{
 }
 
 //---------------------------------------------------------------------------------
@@ -215,7 +156,11 @@ const char *CSpeedrunDemoRecord::GetPluginDescription(void)
 //---------------------------------------------------------------------------------
 void CSpeedrunDemoRecord::LevelInit(char const *pMapName)
 {
-
+	if (recordMode != DEMREC_DISABLED)
+	{
+		std::string str(pMapName);
+		currentMapName = str;
+	}
 }
 
 //---------------------------------------------------------------------------------
@@ -228,29 +173,17 @@ void CSpeedrunDemoRecord::ServerActivate(edict_t *pEdictList, int edictCount, in
 }
 
 //---------------------------------------------------------------------------------
-// Purpose: called once per server frame, do recurring work here (like checking for timeouts)
-//---------------------------------------------------------------------------------
-void CSpeedrunDemoRecord::GameFrame(bool simulating)
-{
-
-}
-
-//---------------------------------------------------------------------------------
 // Purpose: called on level end (as the server is shutting down or going to a new map)
 //---------------------------------------------------------------------------------
 void CSpeedrunDemoRecord::LevelShutdown(void) // !!!!this can get called multiple times per map change
 {
-	if (recordMode > -1)
+	if (recordMode == DEMREC_STANDARD)
 	{
-		if (recordMode == 0)
+		if (clientEngine->IsPlayingDemo() == false && clientEngine->IsRecordingDemo() == true)
 		{
-			if (clientEngine->IsPlayingDemo() == false && clientEngine->IsRecordingDemo() == true)
-			{
-				//totalTicks += clientEngine->GetDemoRecordingTick();
-				char command[256] = {};
-				V_snprintf(command, 256, "stop");
-				clientEngine->ClientCmd(command);
-			}
+			char command[256] = {};
+			V_snprintf(command, 256, "stop");
+			clientEngine->ClientCmd(command);
 		}
 	}
 }
@@ -260,7 +193,7 @@ void CSpeedrunDemoRecord::LevelShutdown(void) // !!!!this can get called multipl
 //---------------------------------------------------------------------------------
 void CSpeedrunDemoRecord::ClientActive(edict_t *pEntity)
 {
-	//causes portal demos to crash?
+	// causes portal demos to crash?
 }
 
 //---------------------------------------------------------------------------------
@@ -280,61 +213,49 @@ void CSpeedrunDemoRecord::ClientPutInServer(edict_t *pEntity, char const *player
 }
 
 //---------------------------------------------------------------------------------
-// Purpose: called on level start
-//---------------------------------------------------------------------------------
-void CSpeedrunDemoRecord::SetCommandClient(int index)
-{
-	m_iClientCommandIndex = index;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: called on level start
-//---------------------------------------------------------------------------------
-void CSpeedrunDemoRecord::ClientSettingsChanged(edict_t *pEdict)
-{
-
-}
-
-//---------------------------------------------------------------------------------
 // Purpose: called when a client joins a server
 //---------------------------------------------------------------------------------
 PLUGIN_RESULT CSpeedrunDemoRecord::ClientConnect(bool *bAllowConnect, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
-	if (recordMode > -1)
+	if (recordMode != DEMREC_DISABLED)
 	{
 		if (clientEngine->IsPlayingDemo() == false)
 		{
-			std::string curMap = STRING(gpGlobals->mapname);
+			std::string& curMap = currentMapName;
 
 			if (curMap.find("background") == -1)
 			{
-				char command[256] = {}; //Max path length is 32000 but 256 is easier on RAM, I read that somewhere not sure if it's true tho. Might want to increase if people have problems...
-				//Q: Why does game crash when I record a demo? A: Strange character/letters in path OR your path exceeds 256 characters, windows max is 320 (wat)!
-				if (lastMapName == curMap && recordMode == 0)
+				// Max path length is 32000 but 256 is easier on RAM, I read that somewhere not sure if it's true tho.
+				// Might want to increase if people have problems...
+				char command[256] = {};
+
+				// Q: Why does game crash when I record a demo?
+				// A: Strange character/letters in path OR your path exceeds 256 characters, windows max is 320.
+				if (lastMapName == curMap && recordMode == DEMREC_STANDARD)
 				{
-					retrys++;
-					V_snprintf(currentDemoName, 256, "%s_%d", curMap.c_str(), retrys);
+					retries++;
+					V_snprintf(currentDemoName, 256, "%s_%d", curMap.c_str(), retries);
 				}
 				else
 				{
-					int storedRetrys;
-					if (recordMode == 1)
+					int storedretries;
+					if (recordMode == DEMREC_SEGMENTED)
 					{
-						storedRetrys = 0;
+						storedretries = 0;
 					}
 					else
 					{
-						storedRetrys = demoExists(curMap.c_str());
+						storedretries = demoExists(curMap.c_str());
 					}
 
-					if (storedRetrys != 0)
+					if (storedretries != 0)
 					{
-						retrys = storedRetrys;
-						V_snprintf(currentDemoName, 256, "%s_%d", curMap.c_str(), retrys);
+						retries = storedretries;
+						V_snprintf(currentDemoName, 256, "%s_%d", curMap.c_str(), retries);
 					}
 					else
 					{
-						retrys = 0;
+						retries = 0;
 						V_snprintf(currentDemoName, 256, "%s", curMap.c_str());
 					}
 
@@ -351,38 +272,6 @@ PLUGIN_RESULT CSpeedrunDemoRecord::ClientConnect(bool *bAllowConnect, edict_t *p
 }
 
 //---------------------------------------------------------------------------------
-// Purpose: called when a client types in a command (only a subset of commands however, not CON_COMMAND's)
-//---------------------------------------------------------------------------------
-PLUGIN_RESULT CSpeedrunDemoRecord::ClientCommand(edict_t *pEntity, const CCommand &args)
-{
-	return PLUGIN_CONTINUE;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: called when a client is authenticated
-//---------------------------------------------------------------------------------
-PLUGIN_RESULT CSpeedrunDemoRecord::NetworkIDValidated(const char *pszUserName, const char *pszNetworkID)
-{
-	return PLUGIN_CONTINUE;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: called when a cvar value query is finished
-//---------------------------------------------------------------------------------
-void CSpeedrunDemoRecord::OnQueryCvarValueFinished(QueryCvarCookie_t iCookie, edict_t *pPlayerEntity, EQueryCvarValueStatus eStatus, const char *pCvarName, const char *pCvarValue)
-{
-
-}
-void CSpeedrunDemoRecord::OnEdictAllocated(edict_t *edict)
-{
-
-}
-void CSpeedrunDemoRecord::OnEdictFreed(const edict_t *edict)
-{
-
-}
-
-//---------------------------------------------------------------------------------
 // Purpose: Custom Functions & Con Commands
 //---------------------------------------------------------------------------------
 
@@ -391,12 +280,12 @@ void CSpeedrunDemoRecord::OnEdictFreed(const edict_t *edict)
 //---------------------------------------------------------------------------------
 int demoExists(const char* curMap)
 {
-	//1) Search for demos with map name in filename
-	//2) If none found, return 0
-	//3) If found, check for an _#, if none return a 1, else if # > 1, add 1 to that number and return #+1
+	// 1) Search for demos with map name in filename
+	// 2) If none found, return 0
+	// 3) If found, check for an _#, if none return a 1, else if # > 1, add 1 to that number and return #+1
 
 	FileFindHandle_t findHandle;
-	int retrysTmp = 0;
+	int retriesTmp = 0;
 
 	char path[256];
 	V_snprintf(path, 256, "%s%s*", sessionDir, curMap);
@@ -405,11 +294,11 @@ int demoExists(const char* curMap)
 	while (pFilename != NULL)
 	{
 		pFilename = filesystem->FindNext(findHandle);
-		retrysTmp++;
+		retriesTmp++;
 	}
 	filesystem->FindClose(findHandle);
 
-	return retrysTmp;
+	return retriesTmp;
 }
 
 //---------------------------------------------------------------------------------
@@ -431,9 +320,11 @@ void pathExists()
 //---------------------------------------------------------------------------------
 void findFirstMap()
 {
-	//check if it is empty true: stop, false: cont
+	// check if it is empty true: stop, false: cont
 	FileHandle_t firstMapConfig = filesystem->Open("cfg/chapter1.cfg", "r", "MOD");
-	if (firstMapConfig) //check if it exists is there: cont, dne: stop
+
+	// check if it exists is there: cont, dne: stop
+	if (firstMapConfig)
 	{
 
 		int file_len = filesystem->Size(firstMapConfig);
@@ -443,12 +334,12 @@ void findFirstMap()
 		firstMap[file_len] = '\0';
 		filesystem->Close(firstMapConfig);
 
-		*std::remove(firstMap, firstMap + strlen(firstMap), '\n') = '\0'; //Remove new lines
-		*std::remove(firstMap, firstMap + strlen(firstMap), '\r') = '\0'; //Remove returns
+		*std::remove(firstMap, firstMap + strlen(firstMap), '\n') = '\0'; // Remove new lines
+		*std::remove(firstMap, firstMap + strlen(firstMap), '\r') = '\0'; // Remove returns
 
-		std::string mapName = std::string(firstMap).substr(std::string(firstMap).find("map ") + 4); //get rid of words "map "
+		std::string mapName = std::string(firstMap).substr(std::string(firstMap).find("map ") + 4); // get rid of words "map "
 
-		if (FStrEq(speedrun_map.GetString(), "")) //Will this work? Might have to be FRstrEq(speedrun_map.GetString(), NULL) == true
+		if (FStrEq(speedrun_map.GetString(), "")) // Will this work? Might have to be FRstrEq(speedrun_map.GetString(), NULL) == true
 		{
 			speedrun_map.SetValue(mapName.c_str());
 		}
@@ -457,7 +348,8 @@ void findFirstMap()
 	}
 }
 
-//Get date/time: code from SizzlingCalamari's wonderful plugin! https://raw.githubusercontent.com/SizzlingCalamari/sizzlingplugins/master/sizzlingrecord/
+// Get date/time: code from SizzlingCalamari's wonderful plugin!
+// https://raw.githubusercontent.com/SizzlingCalamari/sizzlingplugins/master/sizzlingrecord/
 void GetDateAndTime(struct tm &ltime)
 {
 	// get the time as an int64
@@ -481,51 +373,53 @@ void ConvertTimeToLocalTime(const time_t &t, struct tm &ltime)
 //---------------------------------------------------------------------------------
 CON_COMMAND_F(speedrun_start, "starts run", FCVAR_DONTRECORD)
 {
-	if (recordMode == 1) //Already recording segments? Throw error
+	// Already recording segments? Throw error
+	if (recordMode == DEMREC_SEGMENTED)
 	{
-		ConColorMsg(Color(0, 255, 0, 255), "[Speedrun] Please stop all other speedruns with speedrun_stop.\n");
+		DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Please stop segmented recording with speedrun_stop.\n");
 	}
 	else
 	{
-		if (FStrEq(speedrun_map.GetString(), "")) //No map set? Throw error!
+		// No map or save set? Throw error
+		if (!FStrEq(speedrun_map.GetString(), "") && !FStrEq(speedrun_save.GetString(), ""))
 		{
-			ConColorMsg(Color(255, 87, 87, 255), "[Speedrun] Please stop all other speedruns with speedrun_stop.\n");
+			DemRecMsg(Color(255, 87, 87, 255), "[Speedrun] Please set a map with speedrun_map or save with speedrun_save first.\n");
 		}
 		else
 		{
-			//Let the user know
-			ConColorMsg(Color(0, 255, 0, 255), "[Speedrun] Speedrun starting now...\n");
+			// Let the user know
+			DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Speedrun starting now...\n");
 
-			//Init standard recording mode
-			recordMode = 0;
+			// Init standard recording mode
+			recordMode = DEMREC_STANDARD;
 			lastMapName = "";
 
-			//Get current time
+			// Get current time
 			struct tm ltime;
 			ConvertTimeToLocalTime(time(NULL), ltime);
 
-			//Parse time
+			// Parse time
 			char tmpDir[32] = {};
 			V_snprintf(tmpDir, 32, "%04i.%02i.%02i-%02i.%02i.%02i", ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
-			//Create dir
+			// Create dir
 			V_snprintf(sessionDir, 256, "%s%s\\", speedrun_dir.GetString(), tmpDir);
 			V_FixSlashes(sessionDir);
 			filesystem->CreateDirHierarchy(sessionDir, "DEFAULT_WRITE_PATH");
 
-			//Store dir in a resume txt file incase of crash
+			// Store dir in a resume txt file incase of crash
 			resumeBuffer.Clear();
 			resumeBuffer.Printf("%s", sessionDir);
 
-			//Path to default directory
+			// Path to default directory
 			char path[256] = {};
 			V_snprintf(path, 256, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
 
-			//Print to file, let us know it was successful and play a silly sound :P
+			// Print to file, let us know it was successful and play a silly sound :P
 			filesystem->AsyncWrite(path, resumeBuffer.Base(), resumeBuffer.TellPut(), false);
 
-			//Check to see if a save is specified in speedrun_save, if not use specified map in speedrun_map
-			//Make sure save exisits (only checking in SAVE folder), if none load specified map.
+			// Check to see if a save is specified in speedrun_save, if not use specified map in speedrun_map
+			// Make sure save exisits (only checking in SAVE folder), if none load specified map.
 			char tmpSav[32] = {};
 			V_snprintf(tmpSav, 32, ".\\SAVE\\%s.sav", speedrun_save.GetString());
 			V_FixSlashes(tmpSav);
@@ -533,14 +427,14 @@ CON_COMMAND_F(speedrun_start, "starts run", FCVAR_DONTRECORD)
 			char command[256] = {};
 			if (filesystem->FileExists(tmpSav, "MOD"))
 			{
-				//Load save else...
-				ConColorMsg(Color(0, 255, 0, 255), "[Speedrun] Loading from save...\n");
+				// Load save else...
+				DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Loading from save...\n");
 				V_snprintf(command, 256, "load %s.sav\n", speedrun_save.GetString());
 				clientEngine->ClientCmd(command);
 			}
 			else
 			{
-				//Start run
+				// Start run
 				V_snprintf(command, 256, "map \"%s\"\n", speedrun_map.GetString());
 				engine->ServerCommand(command);
 			}
@@ -551,20 +445,20 @@ CON_COMMAND_F(speedrun_start, "starts run", FCVAR_DONTRECORD)
 
 CON_COMMAND_F(speedrun_segment, "segmenting mode", FCVAR_DONTRECORD)
 {
-	if (recordMode > -1) //Already in standard record mode? Throw error!
+	if (recordMode != DEMREC_DISABLED) // Already in standard record mode? Throw error!
 	{
-		ConColorMsg(Color(0, 255, 0, 255), "[Speedrun] Please stop all other speedruns with speedrun_stop.\n");
+		DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Please stop all other speedruns with speedrun_stop.\n");
 	}
 	else
 	{
-		//Let the user know
-		ConColorMsg(Color(0, 255, 0, 255), "[Speedrun] Segment demo record activated, please reload/load a map to start recording...\n");
+		// Let the user know
+		DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Segment demo record activated, please reload/load a map to start recording...\n");
 
-		//Create path if it doesnt exist
+		// Create path if it doesnt exist
 		pathExists();
 
-		//Init segment recording mode
-		recordMode = 1;
+		// Init segment recording mode
+		recordMode = DEMREC_SEGMENTED;
 		V_snprintf(sessionDir, 256, "%s", speedrun_dir.GetString());
 	}
 
@@ -572,9 +466,9 @@ CON_COMMAND_F(speedrun_segment, "segmenting mode", FCVAR_DONTRECORD)
 
 CON_COMMAND_F(speedrun_resume, "resume a speedrun after a crash", FCVAR_DONTRECORD)
 {
-	if (recordMode == -1)
+	if (recordMode == DEMREC_DISABLED)
 	{
-		//Path to default directory
+		// Path to default directory
 		char path[256] = {};
 		V_snprintf(path, 256, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
 		FileHandle_t resumeFile = filesystem->Open(path, "r", "MOD");
@@ -588,11 +482,11 @@ CON_COMMAND_F(speedrun_resume, "resume a speedrun after a crash", FCVAR_DONTRECO
 			filesystem->Close(resumeFile);
 			V_snprintf(sessionDir, 256, "%s", contents);
 
-			//Init standard recording mode
-			recordMode = 0;
+			// Init standard recording mode
+			recordMode = DEMREC_STANDARD;
 			lastMapName = "";
 
-			ConColorMsg(Color(0, 255, 0, 255), "[Speedrun] Past speedrun successfully loaded, please load your last save now.\n");
+			DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Past speedrun successfully loaded, please load your last save now.\n");
 			delete[] contents;
 		}
 		else
@@ -602,41 +496,42 @@ CON_COMMAND_F(speedrun_resume, "resume a speedrun after a crash", FCVAR_DONTRECO
 	}
 	else
 	{
-		ConColorMsg(Color(0, 255, 0, 255), "[Speedrun] Please stop all other speedruns with speedrun_stop before resuming a speedrun.\n");
+		DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Please stop all other speedruns with speedrun_stop before resuming a speedrun.\n");
 	}
 }
 
-//Bookmark buffer and other parts of this command inspired by SizzlingCalamari, https://github.com/SizzlingCalamari/
-//I wasnt too sure what a buffer was until now, pretty useful :D!!
-//clientEngine->GetDemoRecordingTick() only in 5135 :/
-#ifdef NEW_ENGINE
+// Bookmark buffer and other parts of this command inspired by SizzlingCalamari, https://github.com/SizzlingCalamari/
+// I wasnt too sure what a buffer was until now, pretty useful :D!!
+// clientEngine->GetDemoRecordingTick() only in 5135 :/
+#ifdef SSDK2013
 CON_COMMAND_F(speedrun_bookmark, "create a bookmark for those ep0ch moments.", FCVAR_DONTRECORD)
 {
-	if (recordMode == -1 || clientEngine->IsRecordingDemo() == false) //You have to be in speedrun and recording demo to do this!
+	// You have to be in speedrun and recording demo to do this!
+	if (recordMode == DISABLED || clientEngine->IsRecordingDemo() == false)
 	{
-		ConColorMsg(Color(0, 255, 0, 255), "Please start a speedrun and be ingame.\n");
+		DemRecMsg(Color(0, 255, 0, 255), "Please start a speedrun and be ingame.\n");
 	}
 	else
 	{
-		//Clear buffer and place a return for ease of reading
+		// Clear buffer and place a return for ease of reading
 		bookmarkBuffer.Clear();
 		bookmarkBuffer.Printf("\r\n");
 
-		//get local time
+		// get local time
 		struct tm ltime;
 		ConvertTimeToLocalTime(time(NULL), ltime);
 
-		//Print the bookmark file location and tick to buffer
+		// Print the bookmark file location and tick to buffer
 		bookmarkBuffer.Printf("[%04i/%02i/%02i %02i:%02i] demo: %s%s\r\n", ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, sessionDir, currentDemoName);
 		bookmarkBuffer.Printf("\t\t   tick: %d\r\n", clientEngine->GetDemoRecordingTick());
 
-		//Path to default directory
+		// Path to default directory
 		char path[256] = {};
 		V_snprintf(path, 256, "%sspeedrun_democrecord_bookmarks.txt", speedrun_dir.GetString());
 
-		//Print to file, let use know it was successful and play a silly sound :P
+		// Print to file, let use know it was successful and play a silly sound :P
 		filesystem->AsyncAppend(path, bookmarkBuffer.Base(), bookmarkBuffer.TellPut(), false);
-		ConColorMsg(Color(255, 165, 0, 255), "[Speedrun] Bookmarked!\n");
+		DemRecMsg(Color(255, 165, 0, 255), "[Speedrun] Bookmarked!\n");
 		soundEngine->EmitAmbientSound(BOOKMARK_SOUND_FILE, DEFAULT_SOUND_PACKET_VOLUME);
 
 	}
@@ -645,16 +540,15 @@ CON_COMMAND_F(speedrun_bookmark, "create a bookmark for those ep0ch moments.", F
 
 CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
 {
-	if (recordMode == -1)
+	if (recordMode == DEMREC_DISABLED)
 	{
-		ConColorMsg(Color(0, 255, 0, 255), "[Speedrun] No speedrun in progress.\n");
+		DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] No speedrun in progress.\n");
 	}
 	else
 	{
-		ConColorMsg(Color(0, 255, 0, 255), "[Speedrun] Speedrun will STOP now...\n");
+		DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Speedrun will STOP now...\n");
 
-		//recordMode = -1;
-		lastMapName = STRING(gpGlobals->mapname);
+		lastMapName = currentMapName;
 
 		if (clientEngine->IsRecordingDemo() == true)
 		{
@@ -663,22 +557,22 @@ CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
 			clientEngine->ClientCmd(command);
 		}
 
-		if (recordMode == 0)
+		if (recordMode == DEMREC_STANDARD)
 		{
-			//Path to default directory
+			// Path to default directory
 			char path[256] = {};
 			V_snprintf(path, 256, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
 
-			//Delete resume file
+			// Delete resume file
 			filesystem->RemoveFile(path, "MOD");
 		}
 
-		recordMode = -1;
+		recordMode = DEMREC_DISABLED;
 	}
 }
 
 
 CON_COMMAND(speedrun_version, "prints the version of the empty plugin")
 {
-	Msg("Version:0.0.5.1\n");
+	Msg("Version:0.0.6.0\n");
 }
