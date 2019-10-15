@@ -29,6 +29,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>speedrun_demorecord</ProjectName>
     <ProjectGuid>{FCDA6B7A-4E38-7CD9-56EC-CCD115F2ACCB}</ProjectGuid>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2013|Win32'" Label="Configuration">

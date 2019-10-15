@@ -1,12 +1,5 @@
 //===== Copyright © 1996-2008, Valve Corporation, All rights reserved. ======//
 //
-// Purpose: 
-// +Bookmark mode?
-// +Fix demo overwrite
-// -Timer
-// -Check for valid directory ./lol/ or ./ or ./lol/lol2/ NOT! /lol or /lol/ or lol
-// +Speedrun resume on game crash, make text file with current map/ retry/ session dir at start of level? what if it crashes on level change?? this will be kinda hard to make.
-//  kinda made, wanna incorporate ability to load last save automatically
 // $NoKeywords: $
 //
 //===========================================================================//
@@ -31,7 +24,7 @@
 #include "cdll_int.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
-#include "tier0/memdbgon.h"
+#include "tier0/memdbgoff.h"
 
 // Interfaces from the engine
 IVEngineServer	*engine = NULL; // helper functions (messaging clients, loading content, making entities, running commands, etc)

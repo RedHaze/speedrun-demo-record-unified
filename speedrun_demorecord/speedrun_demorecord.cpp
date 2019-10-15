@@ -24,7 +24,7 @@
 #include "cdll_int.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
-#include "tier0/memdbgon.h"
+#include "tier0/memdbgoff.h"
 
 #define BOOKMARK_SOUND_FILE "ambient/creatures/teddy.wav"
 //#define NEW_ENGINE
