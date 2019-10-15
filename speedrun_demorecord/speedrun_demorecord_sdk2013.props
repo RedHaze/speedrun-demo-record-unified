@@ -7,7 +7,7 @@
     <GAME_HL2_DIR>$(GAME_2013_HL2_DIR)</GAME_HL2_DIR>
   </PropertyGroup>
   <PropertyGroup>
-    <_PropertySheetDisplayName>speedrun_demorecord</_PropertySheetDisplayName>
+    <_PropertySheetDisplayName>speedrun_demorecord_2013</_PropertySheetDisplayName>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup>

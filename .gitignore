@@ -1,8 +1,9 @@
 # Build files
 Debug/
-Debug OE/
+Debug 2006/
 Debug 2013/
-Release OE/
+Release/
+Release 2006/
 Release 2013/
 
 ## Ignore Visual Studio temporary files, build results, and

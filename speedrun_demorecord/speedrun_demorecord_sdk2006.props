@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <SDK_DIR_SRC>$(SDK_2006_DIR)</SDK_DIR_SRC>
+    <SDK_DIR_ROOT>$(SDK_2006_DIR)</SDK_DIR_ROOT>
+    <GAME_HL2_DIR>$(GAME_2006_HL2_DIR)</GAME_HL2_DIR>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_PropertySheetDisplayName>speedrun_demorecord_2006</_PropertySheetDisplayName>
+  </PropertyGroup>
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="SDK_DIR_SRC">
+      <Value>$(SDK_DIR_SRC)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SDK_DIR_ROOT">
+      <Value>$(SDK_DIR_ROOT)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="GAME_HL2_DIR">
+      <Value>$(GAME_HL2_DIR)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+  <!-- HL2 Debug Settings -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2006|Win32'">
+    <LocalDebuggerCommand>$(GAME_HL2_DIR)\hl2.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-game hl2 -novid -allowdebug +plugin_load speedrun_demorecord +speedrun_dir ./test/ +speedrun_map d1_canals_06</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(GAME_HL2_DIR)\hl2</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release 2006|Win32'">
+    <LocalDebuggerCommand>$(GAME_HL2_DIR)\hl2.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-game hl2 -novid -allowdebug +plugin_load speedrun_demorecord +speedrun_dir ./test/ +speedrun_map d1_canals_06</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(GAME_HL2_DIR)\hl2</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+</Project>
