@@ -105,9 +105,9 @@ private:
 //---------------------------------------------------------------------------------
 // Purpose: place to hold demos!
 //---------------------------------------------------------------------------------
-static ConVar speedrun_dir("speedrun_dir", "./", FCVAR_ARCHIVE, "Sets the directory for demos to record to.");
-static ConVar speedrun_map("speedrun_map", "", FCVAR_ARCHIVE, "Sets the first map in the game which will be started when speedrun_start is executed.");
-static ConVar speedrun_save("speedrun_save", "", FCVAR_ARCHIVE, "If empty, speedrun_start will start using map specifiec in speedrun_map. If save is specified, speedrun_start will start using the save instead of a map. If the specified save does not exist, the speedrun will start using specified map. The save specified MUST BE in the SAVE folder!!");
+static ConVar speedrun_dir("speedrun_dir", "./", FCVAR_ARCHIVE | FCVAR_DONTRECORD, "Sets the directory for demos to record to.");
+static ConVar speedrun_map("speedrun_map", "", FCVAR_ARCHIVE | FCVAR_DONTRECORD, "Sets the first map in the game which will be started when speedrun_start is executed.");
+static ConVar speedrun_save("speedrun_save", "", FCVAR_ARCHIVE | FCVAR_DONTRECORD, "If empty, speedrun_start will start using map specifiec in speedrun_map. If save is specified, speedrun_start will start using the save instead of a map. If the specified save does not exist, the speedrun will start using specified map. The save specified MUST BE in the SAVE folder!!");
 
 // 
 // The plugin is a static singleton that is exported as an interface
@@ -216,22 +216,6 @@ const char *CSpeedrunDemoRecord::GetPluginDescription(void)
 void CSpeedrunDemoRecord::LevelInit(char const *pMapName)
 {
 
-	/*
-	if(recordMode == 0)
-	{
-	resumeBuffer.Clear();
-	resumeBuffer.Printf("%s\r\n", pMapName);
-	resumeBuffer.Printf("%s\r\n", sessionDir);
-	//resumeBuffer.Printf("%s\r\n", );
-	//retrys //not up to date, rely on last demo recorded function?
-
-	//Path to default directory
-	char path[256] = {};
-	V_snprintf( path, 256, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString() );
-
-	//Print to file, let use know it was successful and play a silly sound :P
-	filesystem->AsyncWrite(path, resumeBuffer.Base(), resumeBuffer.TellPut(), false);
-	}*/
 }
 
 //---------------------------------------------------------------------------------
@@ -405,11 +389,12 @@ void CSpeedrunDemoRecord::OnEdictFreed(const edict_t *edict)
 //---------------------------------------------------------------------------------
 // Purpose: checks if chosen directory exists, if not attempts to create folder (please dont hate me noobest)
 //---------------------------------------------------------------------------------
-//1) Search for demos with map name in filename
-//2) If none found, return 0
-//3) If found, check for an _#, if none return a 1, else if # > 1, add 1 to that number and return #+1
 int demoExists(const char* curMap)
 {
+	//1) Search for demos with map name in filename
+	//2) If none found, return 0
+	//3) If found, check for an _#, if none return a 1, else if # > 1, add 1 to that number and return #+1
+
 	FileFindHandle_t findHandle;
 	int retrysTmp = 0;
 
@@ -494,7 +479,7 @@ void ConvertTimeToLocalTime(const time_t &t, struct tm &ltime)
 //---------------------------------------------------------------------------------
 // Purpose: Con Commands
 //---------------------------------------------------------------------------------
-CON_COMMAND(speedrun_start, "starts run")
+CON_COMMAND_F(speedrun_start, "starts run", FCVAR_DONTRECORD)
 {
 	if (recordMode == 1) //Already recording segments? Throw error
 	{
@@ -564,7 +549,7 @@ CON_COMMAND(speedrun_start, "starts run")
 }
 
 
-CON_COMMAND(speedrun_segment, "segmenting mode")
+CON_COMMAND_F(speedrun_segment, "segmenting mode", FCVAR_DONTRECORD)
 {
 	if (recordMode > -1) //Already in standard record mode? Throw error!
 	{
@@ -585,7 +570,7 @@ CON_COMMAND(speedrun_segment, "segmenting mode")
 
 }
 
-CON_COMMAND(speedrun_resume, "resume a speedrun after a crash")
+CON_COMMAND_F(speedrun_resume, "resume a speedrun after a crash", FCVAR_DONTRECORD)
 {
 	if (recordMode == -1)
 	{
@@ -625,7 +610,7 @@ CON_COMMAND(speedrun_resume, "resume a speedrun after a crash")
 //I wasnt too sure what a buffer was until now, pretty useful :D!!
 //clientEngine->GetDemoRecordingTick() only in 5135 :/
 #ifdef NEW_ENGINE
-CON_COMMAND(speedrun_bookmark, "create a bookmark for those ep0ch moments.")
+CON_COMMAND_F(speedrun_bookmark, "create a bookmark for those ep0ch moments.", FCVAR_DONTRECORD)
 {
 	if (recordMode == -1 || clientEngine->IsRecordingDemo() == false) //You have to be in speedrun and recording demo to do this!
 	{
@@ -658,7 +643,7 @@ CON_COMMAND(speedrun_bookmark, "create a bookmark for those ep0ch moments.")
 }
 #endif
 
-CON_COMMAND(speedrun_stop, "stops run")
+CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
 {
 	if (recordMode == -1)
 	{
@@ -689,21 +674,6 @@ CON_COMMAND(speedrun_stop, "stops run")
 		}
 
 		recordMode = -1;
-
-		/*
-		totalTicks += clientEngine->GetDemoRecordingTick();
-
-		//Gocnak's code from ghosting is used below
-		float time = totalTicks * 0.015;
-		int hours = (int)(time / 3600.0f);
-		int minutes = (int)(((time / 3600.0f) - hours) * 60.0f);
-		int seconds = (int)(((((time / 3600.0f) - hours) * 60.0f) - minutes) * 60.0f);
-		int millis = (int)(((((((time / 3600.0f) - hours) * 60.0f) - minutes) * 60.0f) - seconds) * 10000.0f);
-
-		ConColorMsg( Color(0, 255, 0, 255), "[Speedrun] Your total time is: %02d:%02d:%02d:%02d\n", hours, minutes, seconds, millis );
-		ConColorMsg( Color(0, 255, 0, 255), "[Speedrun] Ticks: %d\n", totalTicks );
-		*/
-
 	}
 }
 
@@ -712,29 +682,3 @@ CON_COMMAND(speedrun_version, "prints the version of the empty plugin")
 {
 	Msg("Version:0.0.5.1\n");
 }
-//NEW IN 0.0.5.0
-//+Fixed speedrun_stop, made it actually stop the speedrun...
-//+Ability to load saves instead of load map using speedrun_start
-
-//NEW IN 0.0.5.2
-//-Delete incomplete runs.
-//-Update notifier
-
-//NEW IN 0.0.5.3
-//-Rewrite? One DLL for all versions of source :D
-/*
-4:48 PM - YaLTeR: Since you can't just do TehAddress = &(iface->Function);
-4:48 PM - YaLTeR: You have to do TehAddress = (FunctionTypedef) (*(uintptr_t**)iface)[index]
-4:49 PM - maxxuss [AiRe]: wat
-4:48 PM - YaLTeR: And if the iface has some different vtable for some reason then rip
-4:49 PM - YaLTeR: So I might as well just end up doing it there a proper way
-4:49 PM - YaLTeR: But regarding the interfaces that you use properly
-4:49 PM - YaLTeR: Like ICvar or IEngineClient or whatnot
-
-4:50 PM - YaLTeR: My solution is as such: get the OE interface headers and rename everything to like IEngineClient-OE
-4:50 PM - YaLTeR: THen try to obtain IEngineClient
-4:50 PM - YaLTeR: And just use whatever is not null
-4:50 PM - YaLTeR: If that's NULL, try to obtain the OE version
-
-
-*/
