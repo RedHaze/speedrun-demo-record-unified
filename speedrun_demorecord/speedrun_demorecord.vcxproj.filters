@@ -94,12 +94,6 @@
     <ClCompile Include="speedrun_demorecord.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="speedrun_convar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="speedrun_demorecord-oe.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

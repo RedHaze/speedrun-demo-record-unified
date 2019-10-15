@@ -507,7 +507,7 @@ CON_COMMAND_F(speedrun_resume, "resume a speedrun after a crash", FCVAR_DONTRECO
 CON_COMMAND_F(speedrun_bookmark, "create a bookmark for those ep0ch moments.", FCVAR_DONTRECORD)
 {
 	// You have to be in speedrun and recording demo to do this!
-	if (recordMode == DISABLED || clientEngine->IsRecordingDemo() == false)
+	if (recordMode == DEMREC_DISABLED || clientEngine->IsRecordingDemo() == false)
 	{
 		DemRecMsg(Color(0, 255, 0, 255), "Please start a speedrun and be ingame.\n");
 	}
