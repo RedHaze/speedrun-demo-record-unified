@@ -100,9 +100,10 @@ bool CSpeedrunDemoRecord::Load(CreateInterfaceFn interfaceFactory, CreateInterfa
 	//							 src 2013 = VClient017
 
 	filesystem = (IFileSystem*)interfaceFactory(FILESYSTEM_INTERFACE_VERSION, NULL);
+	gamedll = (IServerGameDLL*)gameServerFactory(INTERFACEVERSION_SERVERGAMEDLL, NULL);
 
 	// get the interfaces we want to use
-	if (!(engine && clientEngine && filesystem && g_pFullFileSystem))
+	if (!(engine && clientEngine && filesystem && g_pFullFileSystem && gamedll))
 	{
 		return false; // we require all these interface to function
 	}
@@ -181,11 +182,15 @@ void CSpeedrunDemoRecord::LevelShutdown(void) // !!!!this can get called multipl
 	{
 		if (clientEngine->IsPlayingDemo() == false && clientEngine->IsRecordingDemo() == true)
 		{
-			char command[256] = {};
-			V_snprintf(command, 256, "stop");
-			clientEngine->ClientCmd(command);
+			clientEngine->ClientCmd("stop");
 		}
 	}
+
+	if (currentDemoIdx != -1) {
+		nextDemo();
+	}
+
+	Msg("SHUTDOWN\n");
 }
 
 //---------------------------------------------------------------------------------
@@ -227,14 +232,14 @@ PLUGIN_RESULT CSpeedrunDemoRecord::ClientConnect(bool *bAllowConnect, edict_t *p
 			{
 				// Max path length is 32000 but 256 is easier on RAM, I read that somewhere not sure if it's true tho.
 				// Might want to increase if people have problems...
-				char command[256] = {};
+				char command[CMD_SIZE] = {};
 
 				// Q: Why does game crash when I record a demo?
 				// A: Strange character/letters in path OR your path exceeds 256 characters, windows max is 320.
 				if (lastMapName == curMap && recordMode == DEMREC_STANDARD)
 				{
 					retries++;
-					V_snprintf(currentDemoName, 256, "%s_%d", curMap.c_str(), retries);
+					Q_snprintf(currentDemoName, DEMO_NAME_SIZE, "%s_%d", curMap.c_str(), retries);
 				}
 				else
 				{
@@ -251,18 +256,18 @@ PLUGIN_RESULT CSpeedrunDemoRecord::ClientConnect(bool *bAllowConnect, edict_t *p
 					if (storedretries != 0)
 					{
 						retries = storedretries;
-						V_snprintf(currentDemoName, 256, "%s_%d", curMap.c_str(), retries);
+						Q_snprintf(currentDemoName, DEMO_NAME_SIZE, "%s_%d", curMap.c_str(), retries);
 					}
 					else
 					{
 						retries = 0;
-						V_snprintf(currentDemoName, 256, "%s", curMap.c_str());
+						Q_snprintf(currentDemoName, DEMO_NAME_SIZE, "%s", curMap.c_str());
 					}
 
 					lastMapName = curMap;
 
 				}
-				V_snprintf(command, 256, "record %s%s\n", sessionDir, currentDemoName);
+				Q_snprintf(command, MAX_PATH, "record %s%s\n", sessionDir, currentDemoName);
 				clientEngine->ClientCmd(command);
 			}
 
@@ -287,8 +292,8 @@ int demoExists(const char* curMap)
 	FileFindHandle_t findHandle;
 	int retriesTmp = 0;
 
-	char path[256];
-	V_snprintf(path, 256, "%s%s*", sessionDir, curMap);
+	char path[MAX_PATH];
+	Q_snprintf(path, MAX_PATH, "%s%s*", sessionDir, curMap);
 
 	const char *pFilename = filesystem->FindFirstEx(path, "MOD", &findHandle);
 	while (pFilename != NULL)
@@ -309,7 +314,7 @@ void pathExists()
 	if (!filesystem->IsDirectory(speedrun_dir.GetString()), "MOD")
 	{
 		char* path = (char*)speedrun_dir.GetString();
-		V_FixSlashes(path);
+		Q_FixSlashes(path);
 		filesystem->CreateDirHierarchy(path, "DEFAULT_WRITE_PATH");
 	}
 }
@@ -346,6 +351,19 @@ void findFirstMap()
 
 		delete[] firstMap;
 	}
+}
+
+void nextDemo()
+{
+	if (currentDemoIdx > numDemos) {
+		currentDemoIdx = -1;
+		return;
+	}
+
+	char command[CMD_SIZE] = {};
+	Q_snprintf(command, CMD_SIZE, "playdemo %s\n", demoList[currentDemoIdx]);
+	clientEngine->ClientCmd(command);
+	currentDemoIdx++;
 }
 
 // Get date/time: code from SizzlingCalamari's wonderful plugin!
@@ -400,11 +418,11 @@ CON_COMMAND_F(speedrun_start, "starts run", FCVAR_DONTRECORD)
 
 			// Parse time
 			char tmpDir[32] = {};
-			V_snprintf(tmpDir, 32, "%04i.%02i.%02i-%02i.%02i.%02i", ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+			Q_snprintf(tmpDir, 32, "%04i.%02i.%02i-%02i.%02i.%02i", ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
 			// Create dir
-			V_snprintf(sessionDir, 256, "%s%s\\", speedrun_dir.GetString(), tmpDir);
-			V_FixSlashes(sessionDir);
+			Q_snprintf(sessionDir, SESSION_DIR_SIZE, "%s%s\\", speedrun_dir.GetString(), tmpDir);
+			Q_FixSlashes(sessionDir);
 			filesystem->CreateDirHierarchy(sessionDir, "DEFAULT_WRITE_PATH");
 
 			// Store dir in a resume txt file incase of crash
@@ -412,30 +430,30 @@ CON_COMMAND_F(speedrun_start, "starts run", FCVAR_DONTRECORD)
 			resumeBuffer.Printf("%s", sessionDir);
 
 			// Path to default directory
-			char path[256] = {};
-			V_snprintf(path, 256, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
+			char path[MAX_PATH] = {};
+			Q_snprintf(path, MAX_PATH, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
 
 			// Print to file, let us know it was successful and play a silly sound :P
 			filesystem->AsyncWrite(path, resumeBuffer.Base(), resumeBuffer.TellPut(), false);
 
 			// Check to see if a save is specified in speedrun_save, if not use specified map in speedrun_map
 			// Make sure save exisits (only checking in SAVE folder), if none load specified map.
-			char tmpSav[32] = {};
-			V_snprintf(tmpSav, 32, ".\\SAVE\\%s.sav", speedrun_save.GetString());
-			V_FixSlashes(tmpSav);
+			char tmpSav[MAX_PATH] = {};
+			Q_snprintf(tmpSav, MAX_PATH, ".\\SAVE\\%s.sav", speedrun_save.GetString());
+			Q_FixSlashes(tmpSav);
 
-			char command[256] = {};
+			char command[CMD_SIZE] = {};
 			if (filesystem->FileExists(tmpSav, "MOD"))
 			{
 				// Load save else...
 				DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Loading from save...\n");
-				V_snprintf(command, 256, "load %s.sav\n", speedrun_save.GetString());
+				Q_snprintf(command, CMD_SIZE, "load %s.sav\n", speedrun_save.GetString());
 				clientEngine->ClientCmd(command);
 			}
 			else
 			{
 				// Start run
-				V_snprintf(command, 256, "map \"%s\"\n", speedrun_map.GetString());
+				Q_snprintf(command, CMD_SIZE, "map \"%s\"\n", speedrun_map.GetString());
 				engine->ServerCommand(command);
 			}
 		}
@@ -459,7 +477,7 @@ CON_COMMAND_F(speedrun_segment, "segmenting mode", FCVAR_DONTRECORD)
 
 		// Init segment recording mode
 		recordMode = DEMREC_SEGMENTED;
-		V_snprintf(sessionDir, 256, "%s", speedrun_dir.GetString());
+		Q_snprintf(sessionDir, SESSION_DIR_SIZE, "%s", speedrun_dir.GetString());
 	}
 
 }
@@ -469,8 +487,8 @@ CON_COMMAND_F(speedrun_resume, "resume a speedrun after a crash", FCVAR_DONTRECO
 	if (recordMode == DEMREC_DISABLED)
 	{
 		// Path to default directory
-		char path[256] = {};
-		V_snprintf(path, 256, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
+		char path[MAX_PATH] = {};
+		Q_snprintf(path, MAX_PATH, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
 		FileHandle_t resumeFile = filesystem->Open(path, "r", "MOD");
 		if (resumeFile)
 		{
@@ -480,7 +498,7 @@ CON_COMMAND_F(speedrun_resume, "resume a speedrun after a crash", FCVAR_DONTRECO
 			filesystem->ReadLine(contents, file_len + 1, resumeFile);
 			contents[file_len] = '\0';
 			filesystem->Close(resumeFile);
-			V_snprintf(sessionDir, 256, "%s", contents);
+			Q_snprintf(sessionDir, SESSION_DIR_SIZE, "%s", contents);
 
 			// Init standard recording mode
 			recordMode = DEMREC_STANDARD;
@@ -526,8 +544,8 @@ CON_COMMAND_F(speedrun_bookmark, "create a bookmark for those ep0ch moments.", F
 		bookmarkBuffer.Printf("\t\t   tick: %d\r\n", clientEngine->GetDemoRecordingTick());
 
 		// Path to default directory
-		char path[256] = {};
-		V_snprintf(path, 256, "%sspeedrun_democrecord_bookmarks.txt", speedrun_dir.GetString());
+		char path[MAX_PATH] = {};
+		Q_snprintf(path, MAX_PATH, "%sspeedrun_democrecord_bookmarks.txt", speedrun_dir.GetString());
 
 		// Print to file, let use know it was successful and play a silly sound :P
 		filesystem->AsyncAppend(path, bookmarkBuffer.Base(), bookmarkBuffer.TellPut(), false);
@@ -552,16 +570,14 @@ CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
 
 		if (clientEngine->IsRecordingDemo() == true)
 		{
-			char command[256] = {};
-			V_snprintf(command, 256, "stop");
-			clientEngine->ClientCmd(command);
+			clientEngine->ClientCmd("stop");
 		}
 
 		if (recordMode == DEMREC_STANDARD)
 		{
 			// Path to default directory
-			char path[256] = {};
-			V_snprintf(path, 256, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
+			char path[MAX_PATH] = {};
+			Q_snprintf(path, MAX_PATH, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
 
 			// Delete resume file
 			filesystem->RemoveFile(path, "MOD");
@@ -569,6 +585,25 @@ CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
 
 		recordMode = DEMREC_DISABLED;
 	}
+}
+
+CON_COMMAND_F(speedrun_demo_playback, "playback a list of demos then exit", FCVAR_DONTRECORD)
+{
+	// Parse in all demos (basically copied from source SDK leak)
+	int c = args.ArgC() - 1;
+	if (c > DEMO_LIST_SIZE)
+	{
+		Msg("Max %i demos in demo playback\n", DEMO_LIST_SIZE);
+		c = DEMO_LIST_SIZE;
+	}
+
+	for (int i = 1; i < c + 1; i++) {
+		Q_strncpy(demoList[i - 1], args[i], DEMO_NAME_SIZE);
+	}
+
+	currentDemoIdx = 0;
+
+	nextDemo();
 }
 
 

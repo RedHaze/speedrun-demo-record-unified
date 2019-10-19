@@ -26,6 +26,13 @@
 #define DemRecMsg(color, msg, ...) (Msg(msg, __VA_ARGS__))
 #endif
 
+// Common command size
+#define CMD_SIZE 256
+#define SESSION_DIR_SIZE 256
+#define DEMO_NAME_SIZE 256
+
+#define DEMO_LIST_SIZE 8
+
 //---------------------------------------------------------------------------------
 // Purpose: plugin class
 //---------------------------------------------------------------------------------
@@ -91,15 +98,21 @@ IVEngineServer	*engine = NULL; // helper functions (messaging clients, loading c
 IVEngineClient	*clientEngine = NULL;
 IEngineSound	*soundEngine = NULL;
 IFileSystem		*filesystem = NULL; //Filesystem for I/O, use this instead of fopen and whatnot
+IServerGameDLL  *gamedll = NULL;
 
 // GlobalVars
-RecordingMode recordMode;
-int retries;
+RecordingMode recordMode = DEMREC_DISABLED;
+int retries = 0;
 std::string lastMapName;
 std::string currentMapName;
-char sessionDir[256];
-char currentDemoName[256];
+char sessionDir[SESSION_DIR_SIZE] = {};
+char currentDemoName[DEMO_NAME_SIZE] = {};
 CUtlBuffer resumeBuffer;
+
+// Demo playback for testing purposes only
+char demoList[DEMO_LIST_SIZE][DEMO_NAME_SIZE] = {};
+int numDemos = 0;
+int currentDemoIdx = -1;
 
 #ifdef SSDK2013
 CUtlBuffer bookmarkBuffer;
@@ -111,3 +124,4 @@ void pathExists();
 void GetDateAndTime(struct tm &ltime);
 void ConvertTimeToLocalTime(const time_t &t, struct tm &ltime);
 int demoExists(const char* curMap);
+void nextDemo();
