@@ -7,8 +7,7 @@ from typing import Optional, List
 class SourceEngineGame(object):
     def __init__(self, game_tag: str, game_dir_env_var: str, exe_filename: str,
                  game_short_code: str, test_data_dir: str,
-                 expected_demo_names: List[str],
-                 rel_plugin_path: Optional[str]):
+                 expected_demo_names: List[str], rel_plugin_path: str):
         resolved_game_dir: str = os.path.abspath(
             os.getenv(game_dir_env_var, ""))
         self.__game_tag: str = game_tag
