@@ -109,11 +109,6 @@ char sessionDir[SESSION_DIR_SIZE] = {};
 char currentDemoName[DEMO_NAME_SIZE] = {};
 CUtlBuffer resumeBuffer;
 
-// Demo playback for testing purposes only
-char demoList[DEMO_LIST_SIZE][DEMO_NAME_SIZE] = {};
-int numDemos = 0;
-int currentDemoIdx = -1;
-
 #ifdef SSDK2013
 CUtlBuffer bookmarkBuffer;
 #endif

@@ -185,12 +185,6 @@ void CSpeedrunDemoRecord::LevelShutdown(void) // !!!!this can get called multipl
 			clientEngine->ClientCmd("stop");
 		}
 	}
-
-	if (currentDemoIdx != -1) {
-		nextDemo();
-	}
-
-	Msg("SHUTDOWN\n");
 }
 
 //---------------------------------------------------------------------------------
@@ -198,7 +192,7 @@ void CSpeedrunDemoRecord::LevelShutdown(void) // !!!!this can get called multipl
 //---------------------------------------------------------------------------------
 void CSpeedrunDemoRecord::ClientActive(edict_t *pEntity)
 {
-	// causes portal demos to crash?
+
 }
 
 //---------------------------------------------------------------------------------
@@ -351,19 +345,6 @@ void findFirstMap()
 
 		delete[] firstMap;
 	}
-}
-
-void nextDemo()
-{
-	if (currentDemoIdx > numDemos) {
-		currentDemoIdx = -1;
-		return;
-	}
-
-	char command[CMD_SIZE] = {};
-	Q_snprintf(command, CMD_SIZE, "playdemo %s\n", demoList[currentDemoIdx]);
-	clientEngine->ClientCmd(command);
-	currentDemoIdx++;
 }
 
 // Get date/time: code from SizzlingCalamari's wonderful plugin!
@@ -586,26 +567,6 @@ CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
 		recordMode = DEMREC_DISABLED;
 	}
 }
-
-CON_COMMAND_F(speedrun_demo_playback, "playback a list of demos then exit", FCVAR_DONTRECORD)
-{
-	// Parse in all demos (basically copied from source SDK leak)
-	int c = args.ArgC() - 1;
-	if (c > DEMO_LIST_SIZE)
-	{
-		Msg("Max %i demos in demo playback\n", DEMO_LIST_SIZE);
-		c = DEMO_LIST_SIZE;
-	}
-
-	for (int i = 1; i < c + 1; i++) {
-		Q_strncpy(demoList[i - 1], args[i], DEMO_NAME_SIZE);
-	}
-
-	currentDemoIdx = 0;
-
-	nextDemo();
-}
-
 
 CON_COMMAND(speedrun_version, "prints the version of the empty plugin")
 {
