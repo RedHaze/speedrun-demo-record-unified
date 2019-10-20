@@ -321,7 +321,7 @@ def setup_teardown(request) -> Iterable[SourceEngineGame]:
 @pytest.mark.parametrize("setup_teardown", SUPPORTED_GAMES, indirect=True)
 def test_demo_playback_doesnt_crash(setup_teardown) -> None:
 
-    # Prep game by copying in dependencies
+    # Prep game by copying in test data
     source_game: SourceEngineGame = setup_teardown
 
     # Ensure SPEEDRUN_DEMORECORD_DEMO_FOLDER does not already exist in the

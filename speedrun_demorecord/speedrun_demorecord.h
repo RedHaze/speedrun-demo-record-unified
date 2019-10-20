@@ -98,7 +98,6 @@ IVEngineServer	*engine = NULL; // helper functions (messaging clients, loading c
 IVEngineClient	*clientEngine = NULL;
 IEngineSound	*soundEngine = NULL;
 IFileSystem		*filesystem = NULL; //Filesystem for I/O, use this instead of fopen and whatnot
-IServerGameDLL  *gamedll = NULL;
 
 // GlobalVars
 RecordingMode recordMode = DEMREC_DISABLED;

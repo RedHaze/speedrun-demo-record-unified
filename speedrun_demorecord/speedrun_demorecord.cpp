@@ -100,10 +100,9 @@ bool CSpeedrunDemoRecord::Load(CreateInterfaceFn interfaceFactory, CreateInterfa
 	//							 src 2013 = VClient017
 
 	filesystem = (IFileSystem*)interfaceFactory(FILESYSTEM_INTERFACE_VERSION, NULL);
-	gamedll = (IServerGameDLL*)gameServerFactory(INTERFACEVERSION_SERVERGAMEDLL, NULL);
 
 	// get the interfaces we want to use
-	if (!(engine && clientEngine && filesystem && g_pFullFileSystem && gamedll))
+	if (!(engine && clientEngine && filesystem && g_pFullFileSystem))
 	{
 		return false; // we require all these interface to function
 	}

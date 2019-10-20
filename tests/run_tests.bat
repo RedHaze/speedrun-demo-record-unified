@@ -17,3 +17,6 @@ call venv\Scripts\activate.bat
 :: Run tests
 :run_tests
 pytest -s .
+
+:: Pause so results can be reviewed
+pause
