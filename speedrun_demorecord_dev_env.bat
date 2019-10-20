@@ -18,6 +18,11 @@ set GAME_2006_HL2_DIR=C:\SourceUnpack\Half-Life 2 2009
 REM -- DO NOT EDIT BELOW THIS LINE --
 
 REM =-------------------------------=
-REM Launch sln
+REM Launch sln if no args
 REM =-------------------------------=
+if [%1] NEQ [] goto arb
 start "" "%~dp0\speedrun_demorecord.sln"
+goto :eof
+
+:arb
+start "" %*
