@@ -3,12 +3,6 @@ import glob
 import os
 from typing import List
 
-# ----- TODO REMOVE THIS WHEN DONE DEBUGGING ---------
-os.environ[
-    "GAME_2013_HL2_DIR"] = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Half-Life 2"
-os.environ["GAME_2007_HL2_DIR"] = "C:\\SourceUnpack\\hl2_vanilla"
-# ----- TODO REMOVE THIS WHEN DONE DEBUGGING ---------
-
 
 class SourceEngineGame(object):
     def __init__(self, game_tag: str, game_dir_env_var: str, exe_filename: str,
@@ -100,6 +94,7 @@ class SourceEngineGame(object):
         self.__test_data_file_list = file_paths
 
 
+# To test a new game for support, add it to this list then exec run_tests.bat
 SUPPORTED_GAMES: List[SourceEngineGame] = [
     SourceEngineGame(game_tag='hl2_2013',
                      game_dir_env_var='GAME_2013_HL2_DIR',
@@ -119,6 +114,18 @@ SUPPORTED_GAMES: List[SourceEngineGame] = [
                      game_short_code='hl2',
                      test_data_dir=os.path.join(os.path.dirname(__file__),
                                                 'reproduction', 'hl2_2007'),
+                     expected_demo_names=[
+                         "d1_canals_06.dem", "d1_canals_06_1.dem",
+                         "d1_canals_06_2.dem", "d1_canals_07.dem",
+                         "d1_canals_06_3.dem", "d1_canals_06_4.dem",
+                         "d1_canals_08.dem", "d2_coast_01.dem"
+                     ]),
+    SourceEngineGame(game_tag='hl2_2006',
+                     game_dir_env_var='GAME_2006_HL2_DIR',
+                     exe_filename='hl2.exe',
+                     game_short_code='hl2',
+                     test_data_dir=os.path.join(os.path.dirname(__file__),
+                                                'reproduction', 'hl2_2006'),
                      expected_demo_names=[
                          "d1_canals_06.dem", "d1_canals_06_1.dem",
                          "d1_canals_06_2.dem", "d1_canals_07.dem",
