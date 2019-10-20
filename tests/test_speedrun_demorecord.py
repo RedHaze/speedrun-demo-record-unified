@@ -43,8 +43,7 @@ def setup_teardown(request) -> Iterable[SourceEngineGame]:
         )
 
     # Fail test if speedrun_demorecord is not deployed
-    if not os.path.isfile(
-            os.path.join(source_game.game_dir, "speedrun_demorecord.dll")):
+    if not os.path.isfile(source_game.plugin_path):
         pytest.fail(
             f"speedrun_demorecord not deployed to \"{source_game.game_dir}\", be sure to build via solution first!"
         )

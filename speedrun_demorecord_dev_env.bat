@@ -1,5 +1,4 @@
 @echo off
-setlocal
 
 REM =-------------------------------=
 REM SDK paths

@@ -1,13 +1,14 @@
 """SourceEngineGame object and supported Source Engine games."""
 import glob
 import os
-from typing import List
+from typing import Optional, List
 
 
 class SourceEngineGame(object):
     def __init__(self, game_tag: str, game_dir_env_var: str, exe_filename: str,
                  game_short_code: str, test_data_dir: str,
-                 expected_demo_names: List[str]):
+                 expected_demo_names: List[str],
+                 rel_plugin_path: Optional[str]):
         resolved_game_dir: str = os.path.abspath(
             os.getenv(game_dir_env_var, ""))
         self.__game_tag: str = game_tag
@@ -16,6 +17,8 @@ class SourceEngineGame(object):
         self.__game_short_code: str = game_short_code
         self.__test_data_dir: str = test_data_dir
         self.__expected_demo_names: List[str] = expected_demo_names
+        self.__plugin_path: str = os.path.join(self.__game_dir,
+                                               rel_plugin_path)
 
         # Parse layout config
         self.__test_data_file_list: List[str] = []
@@ -56,6 +59,10 @@ class SourceEngineGame(object):
     @property
     def test_data_playback_cfg_path(self) -> str:
         return os.path.relpath(self.__test_data_playback_cfg, 'cfg/')
+
+    @property
+    def plugin_path(self) -> str:
+        return self.__plugin_path
 
     def __parse_layout_config(self) -> None:
 
@@ -107,7 +114,8 @@ SUPPORTED_GAMES: List[SourceEngineGame] = [
                          "d1_canals_06_2.dem", "d1_canals_07.dem",
                          "d1_canals_06_3.dem", "d1_canals_06_4.dem",
                          "d1_canals_08.dem", "d2_coast_01.dem"
-                     ]),
+                     ],
+                     rel_plugin_path=".\\speedrun_demorecord.dll"),
     SourceEngineGame(game_tag='hl2_2007',
                      game_dir_env_var='GAME_2007_HL2_DIR',
                      exe_filename='hl2.exe',
@@ -119,17 +127,20 @@ SUPPORTED_GAMES: List[SourceEngineGame] = [
                          "d1_canals_06_2.dem", "d1_canals_07.dem",
                          "d1_canals_06_3.dem", "d1_canals_06_4.dem",
                          "d1_canals_08.dem", "d2_coast_01.dem"
-                     ]),
-    SourceEngineGame(game_tag='hl2_2006',
-                     game_dir_env_var='GAME_2006_HL2_DIR',
-                     exe_filename='hl2.exe',
-                     game_short_code='hl2',
-                     test_data_dir=os.path.join(os.path.dirname(__file__),
-                                                'reproduction', 'hl2_2006'),
-                     expected_demo_names=[
-                         "d1_canals_06.dem", "d1_canals_06_1.dem",
-                         "d1_canals_06_2.dem", "d1_canals_07.dem",
-                         "d1_canals_06_3.dem", "d1_canals_06_4.dem",
-                         "d1_canals_08.dem", "d2_coast_01.dem"
-                     ])
+                     ],
+                     rel_plugin_path=".\\speedrun_demorecord.dll"),
+    # This actually doesn't work because wait prevents stuff from executing :(
+    # SourceEngineGame(game_tag='hl2_2006',
+    #                  game_dir_env_var='GAME_2006_HL2_DIR',
+    #                  exe_filename='hl2.exe',
+    #                  game_short_code='hl2',
+    #                  test_data_dir=os.path.join(os.path.dirname(__file__),
+    #                                             'reproduction', 'hl2_2006'),
+    #                  expected_demo_names=[
+    #                      "d1_canals_06.dem", "d1_canals_06_1.dem",
+    #                      "d1_canals_06_2.dem", "d1_canals_07.dem",
+    #                      "d1_canals_06_3.dem", "d1_canals_06_4.dem",
+    #                      "d1_canals_08.dem", "d2_coast_01.dem"
+    #                  ],
+    #                  rel_plugin_path=".\\..\\bin\\speedrun_demorecord.dll")
 ]
