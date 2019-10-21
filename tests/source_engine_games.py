@@ -41,7 +41,7 @@ class SourceEngineGame(object):
         return [
             self.__exe_path, '-game', self.__game_short_code, '-novid',
             '-allowdebug', '-sw', '-w', '1280', '-h', '720', '-conclearlog',
-            '-condebug'
+            '-condebug', '+volume', '.1'
         ]
 
     @property
