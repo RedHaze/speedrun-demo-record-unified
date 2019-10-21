@@ -5,6 +5,8 @@
     <SDK_DIR_SRC>$(SDK_2007_DIR)</SDK_DIR_SRC>
     <SDK_DIR_ROOT>$(SDK_2007_DIR)</SDK_DIR_ROOT>
     <GAME_HL2_DIR>$(GAME_2007_HL2_DIR)</GAME_HL2_DIR>
+    <GAME_PORTAL_DIR>$(GAME_2007_PORTAL_DIR)</GAME_PORTAL_DIR>
+    <GAME_EP2_DIR>$(GAME_2007_EP2_DIR)</GAME_EP2_DIR>
   </PropertyGroup>
   <PropertyGroup>
     <_PropertySheetDisplayName>speedrun_demorecord_2007</_PropertySheetDisplayName>
@@ -23,6 +25,14 @@
       <Value>$(GAME_HL2_DIR)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
+    <BuildMacro Include="GAME_PORTAL_DIR">
+      <Value>$(GAME_PORTAL_DIR)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="GAME_EP2_DIR">
+      <Value>$(GAME_EP2_DIR)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
   </ItemGroup>
   <!-- HL2 Debug Settings -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2007 - HL2|Win32'">
@@ -36,5 +46,33 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>-game hl2 -novid -allowdebug +plugin_load speedrun_demorecord +speedrun_dir ./test/ +speedrun_map d1_canals_06</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(GAME_HL2_DIR)\hl2</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  
+  <!-- EP2 Debug Settings -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2007 - EP2|Win32'">
+    <LocalDebuggerCommand>$(GAME_EP2_DIR)\hl2.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-game ep2 -novid -allowdebug +plugin_load speedrun_demorecord +speedrun_dir ./test/ +speedrun_map ep2_outland_06a</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(GAME_EP2_DIR)\ep2</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release 2007 - EP2|Win32'">
+    <LocalDebuggerCommand>$(GAME_EP2_DIR)\hl2.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-game ep2 -novid -allowdebug +plugin_load speedrun_demorecord +speedrun_dir ./test/ +speedrun_map ep2_outland_06a</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(GAME_EP2_DIR)\ep2</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  
+  <!-- Portal Debug Settings -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2007 - Portal|Win32'">
+    <LocalDebuggerCommand>$(GAME_PORTAL_DIR)\hl2.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-game portal -novid -allowdebug +plugin_load speedrun_demorecord +speedrun_dir ./test/ +speedrun_map testchmb_a_07</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(GAME_PORTAL_DIR)\portal</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release 2007 - Portal|Win32'">
+    <LocalDebuggerCommand>$(GAME_PORTAL_DIR)\hl2.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-game portal -novid -allowdebug +plugin_load speedrun_demorecord +speedrun_dir ./test/ +speedrun_map testchmb_a_07</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(GAME_PORTAL_DIR)\portal</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>

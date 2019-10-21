@@ -20,6 +20,7 @@ import os
 import re
 import shutil
 import subprocess
+import warnings
 from typing import Dict, Iterable, List, Optional, cast
 
 import pytest
@@ -29,7 +30,13 @@ from source_engine_games import SUPPORTED_GAMES, SourceEngineGame
 
 RE_EXPECTED_DATETIME_DIR = re.compile(
     r"[0-9]{4}\.[0-9]{2}\.[0-9]{2}-[0-9]{2}\.[0-9]{2}\.[0-9]{2}")
+RE_LOADED_PLUGINS = re.compile(
+    r"Loaded plugins:\n-+\n((?:(?:[0-9]+:[ \t]+\"[^\"]+\")\n?)*)-+",
+    re.MULTILINE)
+RE_QUOTE_GROUP = re.compile(r"[0-9]:+[\t\s]+\"([^\"]+)\"")
 SPEEDRUN_DEMORECORD_DEMO_FOLDER: str = "./integration_tests/"
+SPEEDRUN_DEMORECORD_DESCRIPTION: str = "Speedrun Demo Record, Maxx"
+SPEEDRUN_DEMORECORD_PLUGIN_NAME: str = "speedrun_demorecord"
 
 
 @pytest.fixture
@@ -60,6 +67,41 @@ def setup_teardown(request) -> Iterable[SourceEngineGame]:
         pytest.fail(
             f"no playback cfg found in test data layout from \"{source_game.test_data_dir}\"."
         )
+
+    # Ensure speedrun_demorecord won't auto-load first
+    # Warn user if more than one plugin is loaded
+    proc_args: List[str] = source_game.launch_args
+    proc_args.extend(
+        ["-textmode", "+exec", "autoexec", "+plugin_print", "+exit"])
+    subprocess.run(proc_args, check=True)
+
+    # Open the console log
+    con_log_path: str = os.path.join(source_game.game_dir, 'console.log')
+    with open(con_log_path, 'r', encoding='utf-8') as fd:
+        con_log_contents: str = fd.read()
+
+    plugin_print_result: List[str] = RE_LOADED_PLUGINS.findall(
+        con_log_contents)
+
+    # There should only be one plugin list associated with one call to plugin_print
+    assert len(plugin_print_result) == 1
+
+    loaded_plugins: List[str] = list(
+        filter(None, plugin_print_result[0].strip().split('\n')))
+    loaded_plugins_parsed: List[str] = [
+        RE_QUOTE_GROUP.fullmatch(x).group(1) for x in loaded_plugins
+    ]
+
+    if len(loaded_plugins_parsed) != 0:
+        if SPEEDRUN_DEMORECORD_DESCRIPTION in loaded_plugins_parsed:
+            pytest.fail(
+                f"speedrun_demorecord is being automatically loaded for \"{source_game.game_tag}\", please remove the VDF file so the older version does not load."
+            )
+        else:
+            warnings.warn(
+                UserWarning(
+                    f"other plugins are being automatically loaded which may cause integration tests to fail: {loaded_plugins}"
+                ))
 
     # Copy files
     for file_path in cast(List[str], files_list):
@@ -113,7 +155,7 @@ def test_demo_playback_doesnt_crash(setup_teardown) -> None:
     # Execute commands and speedrun_start accordingly
     proc_args: List[str] = source_game.launch_args
     proc_args.extend([
-        "+plugin_load", "speedrun_demorecord", "+speedrun_dir",
+        "+plugin_load", SPEEDRUN_DEMORECORD_PLUGIN_NAME, "+speedrun_dir",
         SPEEDRUN_DEMORECORD_DEMO_FOLDER, "+exec",
         source_game.test_data_playback_cfg_path
     ])
@@ -186,7 +228,7 @@ def test_demo_playback_doesnt_crash(setup_teardown) -> None:
                                               source_game.game_dir)
     proc_args = source_game.launch_args
     proc_args.extend([
-        "+plugin_load", "speedrun_demorecord", "+speedrun_dir",
+        "+plugin_load", SPEEDRUN_DEMORECORD_PLUGIN_NAME, "+speedrun_dir",
         SPEEDRUN_DEMORECORD_DEMO_FOLDER, "+playdemo", first_dem_rel_path
     ])
 

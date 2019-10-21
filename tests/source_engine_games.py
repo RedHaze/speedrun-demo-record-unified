@@ -40,7 +40,8 @@ class SourceEngineGame(object):
     def launch_args(self) -> List[str]:
         return [
             self.__exe_path, '-game', self.__game_short_code, '-novid',
-            '-allowdebug', '-sw', '-w', '1280', '-h', '720'
+            '-allowdebug', '-sw', '-w', '1280', '-h', '720', '-conclearlog',
+            '-condebug'
         ]
 
     @property
@@ -128,7 +129,7 @@ SUPPORTED_GAMES: List[SourceEngineGame] = [
                          "d1_canals_08.dem", "d2_coast_01.dem"
                      ],
                      rel_plugin_path=".\\speedrun_demorecord.dll"),
-    # This actually doesn't work because wait prevents stuff from executing :(
+    #This actually doesn't work because wait prevents stuff from executing :(
     # SourceEngineGame(game_tag='hl2_2006',
     #                  game_dir_env_var='GAME_2006_HL2_DIR',
     #                  exe_filename='hl2.exe',
@@ -141,5 +142,44 @@ SUPPORTED_GAMES: List[SourceEngineGame] = [
     #                      "d1_canals_06_3.dem", "d1_canals_06_4.dem",
     #                      "d1_canals_08.dem", "d2_coast_01.dem"
     #                  ],
-    #                  rel_plugin_path=".\\..\\bin\\speedrun_demorecord.dll")
+    #                  rel_plugin_path=".\\..\\bin\\speedrun_demorecord.dll"),
+    SourceEngineGame(game_tag='portal_2013',
+                     game_dir_env_var='GAME_2013_PORTAL_DIR',
+                     exe_filename='hl2.exe',
+                     game_short_code='portal',
+                     test_data_dir=os.path.join(os.path.dirname(__file__),
+                                                'reproduction', 'portal_2013'),
+                     expected_demo_names=[
+                         "testchmb_a_07.dem", "testchmb_a_07_1.dem",
+                         "testchmb_a_07_2.dem", "testchmb_a_08.dem",
+                         "testchmb_a_08_1.dem", "testchmb_a_09.dem",
+                         "escape_01.dem"
+                     ],
+                     rel_plugin_path=".\\speedrun_demorecord.dll"),
+    SourceEngineGame(game_tag='portal_2007',
+                     game_dir_env_var='GAME_2007_PORTAL_DIR',
+                     exe_filename='hl2.exe',
+                     game_short_code='portal',
+                     test_data_dir=os.path.join(os.path.dirname(__file__),
+                                                'reproduction', 'portal_2007'),
+                     expected_demo_names=[
+                         "testchmb_a_07.dem", "testchmb_a_07_1.dem",
+                         "testchmb_a_07_2.dem", "testchmb_a_08.dem",
+                         "testchmb_a_08_1.dem", "testchmb_a_09.dem",
+                         "escape_01.dem"
+                     ],
+                     rel_plugin_path=".\\speedrun_demorecord.dll"),
+    SourceEngineGame(game_tag='ep2_2007',
+                     game_dir_env_var='GAME_2007_EP2_DIR',
+                     exe_filename='hl2.exe',
+                     game_short_code='ep2',
+                     test_data_dir=os.path.join(os.path.dirname(__file__),
+                                                'reproduction', 'ep2_2007'),
+                     expected_demo_names=[
+                         "ep2_outland_06a.dem", "ep2_outland_06a_1.dem",
+                         "ep2_outland_06a_2.dem", "ep2_outland_07.dem",
+                         "ep2_outland_07_1.dem", "ep2_outland_08.dem",
+                         "ep2_outland_12a.dem"
+                     ],
+                     rel_plugin_path=".\\speedrun_demorecord.dll"),
 ]
