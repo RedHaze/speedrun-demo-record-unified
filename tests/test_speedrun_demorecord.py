@@ -37,6 +37,15 @@ RE_QUOTE_GROUP = re.compile(r"[0-9]:+[\t\s]+\"([^\"]+)\"")
 SPEEDRUN_DEMORECORD_DEMO_FOLDER: str = "./integration_tests/"
 SPEEDRUN_DEMORECORD_DESCRIPTION: str = "Speedrun Demo Record, Maxx"
 SPEEDRUN_DEMORECORD_PLUGIN_NAME: str = "speedrun_demorecord"
+SPEEDRUN_DEMORECORD_VERSION: str = "Version:0.0.6.1"
+
+
+def get_console_output(source_game: SourceEngineGame):
+    # Open the console log
+    con_log_path: str = os.path.join(source_game.game_dir, 'console.log')
+    with open(con_log_path, 'r', encoding='utf-8') as fd:
+        con_log_contents: str = fd.read()
+    return con_log_contents
 
 
 @pytest.fixture
@@ -75,10 +84,7 @@ def setup_teardown(request) -> Iterable[SourceEngineGame]:
         ["-textmode", "+exec", "autoexec", "+plugin_print", "+exit"])
     subprocess.run(proc_args, check=True)
 
-    # Open the console log
-    con_log_path: str = os.path.join(source_game.game_dir, 'console.log')
-    with open(con_log_path, 'r', encoding='utf-8') as fd:
-        con_log_contents: str = fd.read()
+    con_log_contents: str = get_console_output(source_game)
 
     plugin_print_result: List[str] = RE_LOADED_PLUGINS.findall(
         con_log_contents)
@@ -145,18 +151,23 @@ def test_demo_playback_doesnt_crash(setup_teardown) -> None:
     # game's directory. God forbid someone actually records demos to this dir.
     game_srdf: str = os.path.abspath(
         os.path.join(source_game.game_dir, SPEEDRUN_DEMORECORD_DEMO_FOLDER))
+    # Attempt demo cleanup after test is done
+    # Don't clean it up on failure so we can repro the demo crash
     if os.path.isdir(game_srdf):
-        pytest.fail(
-            f"the folder \"{game_srdf}\" already exists, please review the contents and remove before running integration tests."
-        )
+        shutil.rmtree(game_srdf)
+
+    # if os.path.isdir(game_srdf):
+    #     pytest.fail(
+    #         f"the folder \"{game_srdf}\" already exists, please review the contents and remove before running integration tests."
+    #     )
 
     # Load the plugin
     # Set speedrun_dir to something like ./integration_test
     # Execute commands and speedrun_start accordingly
     proc_args: List[str] = source_game.launch_args
     proc_args.extend([
-        "+plugin_load", SPEEDRUN_DEMORECORD_PLUGIN_NAME, "+speedrun_dir",
-        SPEEDRUN_DEMORECORD_DEMO_FOLDER, "+exec",
+        "-nomouse", "+plugin_load", SPEEDRUN_DEMORECORD_PLUGIN_NAME,
+        "+speedrun_dir", SPEEDRUN_DEMORECORD_DEMO_FOLDER, "+exec",
         source_game.test_data_playback_cfg_path
     ])
 
@@ -171,6 +182,11 @@ def test_demo_playback_doesnt_crash(setup_teardown) -> None:
                    stdout=subprocess.PIPE,
                    stderr=subprocess.STDOUT,
                    check=True)
+
+    con_log_contents: List[str] = get_console_output(source_game).split()
+
+    # Ensure the expected version exists
+    assert SPEEDRUN_DEMORECORD_VERSION in con_log_contents
 
     # Ensure the speedrun_demorecord folder was created
     assert os.path.isdir(game_srdf) is True

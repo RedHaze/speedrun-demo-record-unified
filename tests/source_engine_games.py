@@ -168,7 +168,7 @@ SUPPORTED_GAMES: List[SourceEngineGame] = [
                          "testchmb_a_08_1.dem", "testchmb_a_09.dem",
                          "escape_01.dem"
                      ],
-                     rel_plugin_path=".\\speedrun_demorecord.dll"),
+                     rel_plugin_path=".\\..\\bin\\speedrun_demorecord.dll"),
     SourceEngineGame(game_tag='ep2_2007',
                      game_dir_env_var='GAME_2007_EP2_DIR',
                      exe_filename='hl2.exe',

@@ -118,4 +118,3 @@ void pathExists();
 void GetDateAndTime(struct tm &ltime);
 void ConvertTimeToLocalTime(const time_t &t, struct tm &ltime);
 int demoExists(const char* curMap);
-void nextDemo();
