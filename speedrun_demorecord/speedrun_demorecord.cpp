@@ -73,11 +73,6 @@ CSpeedrunDemoRecord::CSpeedrunDemoRecord()
 	retries = 0;
 	lastMapName = "UNKNOWN_MAP";
 	currentMapName = "UNKNOWN_MAP";
-	resumeBuffer.SetBufferType(true, true);
-
-#ifdef SSDK2013
-	bookmarkBuffer.SetBufferType(true, true);
-#endif
 }
 
 CSpeedrunDemoRecord::~CSpeedrunDemoRecord()
@@ -125,7 +120,7 @@ bool CSpeedrunDemoRecord::Load(CreateInterfaceFn interfaceFactory, CreateInterfa
 
 	findFirstMap();
 
-	DemRecMsg(Color(0, 255, 0, 255), "Speedrun_demorecord Loaded\n");
+	DemRecMsgSuccess("Speedrun_demorecord Loaded\n");
 
 	return true;
 }
@@ -260,7 +255,7 @@ PLUGIN_RESULT CSpeedrunDemoRecord::ClientConnect(bool *bAllowConnect, edict_t *p
 					lastMapName = curMap;
 
 				}
-				Q_snprintf(command, MAX_PATH, "record %s%s\n", sessionDir, currentDemoName);
+				Q_snprintf(command, sizeof(command) / sizeof(char), "record %s%s\n", sessionDir, currentDemoName);
 				clientEngine->ClientCmd(command);
 			}
 
@@ -286,7 +281,7 @@ int demoExists(const char* curMap)
 	int retriesTmp = 0;
 
 	char path[MAX_PATH];
-	Q_snprintf(path, MAX_PATH, "%s%s*", sessionDir, curMap);
+	Q_snprintf(path, sizeof(path)/sizeof(char), "%s%s*", sessionDir, curMap);
 
 	const char *pFilename = filesystem->FindFirstEx(path, "MOD", &findHandle);
 	while (pFilename != NULL)
@@ -306,7 +301,7 @@ void pathExists()
 {
 	if (!filesystem->IsDirectory(speedrun_dir.GetString()), "MOD")
 	{
-		char* path = (char*)speedrun_dir.GetString();
+		char* path = const_cast<char*>(speedrun_dir.GetString());
 		Q_FixSlashes(path);
 		filesystem->CreateDirHierarchy(path, "DEFAULT_WRITE_PATH");
 	}
@@ -374,19 +369,19 @@ CON_COMMAND_F(speedrun_start, "starts run", FCVAR_DONTRECORD)
 	// Already recording segments? Throw error
 	if (recordMode == DEMREC_SEGMENTED)
 	{
-		DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Please stop segmented recording with speedrun_stop.\n");
+		DemRecMsgWarning("Please stop segmented recording with speedrun_stop.\n");
 	}
 	else
 	{
 		// No map or save set? Throw error
 		if (!FStrEq(speedrun_map.GetString(), "") && !FStrEq(speedrun_save.GetString(), ""))
 		{
-			DemRecMsg(Color(255, 87, 87, 255), "[Speedrun] Please set a map with speedrun_map or save with speedrun_save first.\n");
+			DemRecMsgWarning("Please set a map with speedrun_map or save with speedrun_save first.\n");
 		}
 		else
 		{
 			// Let the user know
-			DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Speedrun starting now...\n");
+			DemRecMsgSuccess("Speedrun starting now...\n");
 
 			// Init standard recording mode
 			recordMode = DEMREC_STANDARD;
@@ -398,7 +393,7 @@ CON_COMMAND_F(speedrun_start, "starts run", FCVAR_DONTRECORD)
 
 			// Parse time
 			char tmpDir[32] = {};
-			Q_snprintf(tmpDir, 32, "%04i.%02i.%02i-%02i.%02i.%02i", ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+			Q_snprintf(tmpDir, sizeof(tmpDir) / sizeof(char), "%04i.%02i.%02i-%02i.%02i.%02i", ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
 			// Create dir
 			Q_snprintf(sessionDir, SESSION_DIR_SIZE, "%s%s\\", speedrun_dir.GetString(), tmpDir);
@@ -406,34 +401,34 @@ CON_COMMAND_F(speedrun_start, "starts run", FCVAR_DONTRECORD)
 			filesystem->CreateDirHierarchy(sessionDir, "DEFAULT_WRITE_PATH");
 
 			// Store dir in a resume txt file incase of crash
-			resumeBuffer.Clear();
-			resumeBuffer.Printf("%s", sessionDir);
+			int sessionDirLen = Q_strlen(sessionDir);
 
 			// Path to default directory
 			char path[MAX_PATH] = {};
-			Q_snprintf(path, MAX_PATH, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
+			Q_snprintf(path, sizeof(path) / sizeof(char), "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
 
 			// Print to file, let us know it was successful and play a silly sound :P
-			filesystem->AsyncWrite(path, resumeBuffer.Base(), resumeBuffer.TellPut(), false);
+			filesystem->AsyncWrite(path, sessionDir, sessionDirLen, false);
+			filesystem->AsyncFinishAllWrites();
 
 			// Check to see if a save is specified in speedrun_save, if not use specified map in speedrun_map
 			// Make sure save exisits (only checking in SAVE folder), if none load specified map.
 			char tmpSav[MAX_PATH] = {};
-			Q_snprintf(tmpSav, MAX_PATH, ".\\SAVE\\%s.sav", speedrun_save.GetString());
+			Q_snprintf(tmpSav, sizeof(tmpSav) / sizeof(char), ".\\SAVE\\%s.sav", speedrun_save.GetString());
 			Q_FixSlashes(tmpSav);
 
 			char command[CMD_SIZE] = {};
 			if (filesystem->FileExists(tmpSav, "MOD"))
 			{
 				// Load save else...
-				DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Loading from save...\n");
-				Q_snprintf(command, CMD_SIZE, "load %s.sav\n", speedrun_save.GetString());
+				DemRecMsgInfo("Loading from save...\n");
+				Q_snprintf(command, sizeof(command) / sizeof(char), "load %s.sav\n", speedrun_save.GetString());
 				clientEngine->ClientCmd(command);
 			}
 			else
 			{
 				// Start run
-				Q_snprintf(command, CMD_SIZE, "map \"%s\"\n", speedrun_map.GetString());
+				Q_snprintf(command, sizeof(command) / sizeof(char), "map \"%s\"\n", speedrun_map.GetString());
 				engine->ServerCommand(command);
 			}
 		}
@@ -445,12 +440,12 @@ CON_COMMAND_F(speedrun_segment, "segmenting mode", FCVAR_DONTRECORD)
 {
 	if (recordMode != DEMREC_DISABLED) // Already in standard record mode? Throw error!
 	{
-		DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Please stop all other speedruns with speedrun_stop.\n");
+		DemRecMsgWarning("Please stop all other speedruns with speedrun_stop.\n");
 	}
 	else
 	{
 		// Let the user know
-		DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Segment demo record activated, please reload/load a map to start recording...\n");
+		DemRecMsgSuccess("Segment demo record activated, please reload/load a map to start recording...\n");
 
 		// Create path if it doesnt exist
 		pathExists();
@@ -468,7 +463,7 @@ CON_COMMAND_F(speedrun_resume, "resume a speedrun after a crash", FCVAR_DONTRECO
 	{
 		// Path to default directory
 		char path[MAX_PATH] = {};
-		Q_snprintf(path, MAX_PATH, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
+		Q_snprintf(path, sizeof(path) / sizeof(char), "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
 		FileHandle_t resumeFile = filesystem->Open(path, "r", "MOD");
 		if (resumeFile)
 		{
@@ -484,17 +479,17 @@ CON_COMMAND_F(speedrun_resume, "resume a speedrun after a crash", FCVAR_DONTRECO
 			recordMode = DEMREC_STANDARD;
 			lastMapName = "";
 
-			DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Past speedrun successfully loaded, please load your last save now.\n");
+			DemRecMsgSuccess("Past speedrun successfully loaded, please load your last save now.\n");
 			delete[] contents;
 		}
 		else
 		{
-			Warning("Error opening speedrun_democrecord_resume_info.txt, cannot resume speedrun!\n");
+			DemRecMsgWarning("Error opening speedrun_democrecord_resume_info.txt, cannot resume speedrun!\n");
 		}
 	}
 	else
 	{
-		DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Please stop all other speedruns with speedrun_stop before resuming a speedrun.\n");
+		DemRecMsgWarning("Please stop all other speedruns with speedrun_stop before resuming a speedrun.\n");
 	}
 }
 
@@ -507,31 +502,30 @@ CON_COMMAND_F(speedrun_bookmark, "create a bookmark for those ep0ch moments.", F
 	// You have to be in speedrun and recording demo to do this!
 	if (recordMode == DEMREC_DISABLED || clientEngine->IsRecordingDemo() == false)
 	{
-		DemRecMsg(Color(0, 255, 0, 255), "Please start a speedrun and be ingame.\n");
+		DemRecMsgWarning("Please start a speedrun and be ingame.\n");
 	}
 	else
 	{
-		// Clear buffer and place a return for ease of reading
-		bookmarkBuffer.Clear();
-		bookmarkBuffer.Printf("\r\n");
-
 		// get local time
 		struct tm ltime;
 		ConvertTimeToLocalTime(time(NULL), ltime);
 
-		// Print the bookmark file location and tick to buffer
-		bookmarkBuffer.Printf("[%04i/%02i/%02i %02i:%02i] demo: %s%s\r\n", ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, sessionDir, currentDemoName);
-		bookmarkBuffer.Printf("\t\t   tick: %d\r\n", clientEngine->GetDemoRecordingTick());
+		// Clear buffer and place a return for ease of reading
+		char bookmarkBuffer[4096];
+		Q_snprintf(bookmarkBuffer, sizeof(bookmarkBuffer)/sizeof(char), "[%04i/%02i/%02i %02i:%02i] demo: %s%s\r\n\t\t   tick: %d\r\n",
+			ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min,
+			sessionDir, currentDemoName, clientEngine->GetDemoRecordingTick());
+		int bookmarkStrLen = Q_strlen(bookmarkBuffer);
 
 		// Path to default directory
 		char path[MAX_PATH] = {};
-		Q_snprintf(path, MAX_PATH, "%sspeedrun_democrecord_bookmarks.txt", speedrun_dir.GetString());
+		Q_snprintf(path, sizeof(path) / sizeof(char), "%sspeedrun_democrecord_bookmarks.txt", speedrun_dir.GetString());
 
-		// Print to file, let use know it was successful and play a silly sound :P
-		filesystem->AsyncAppend(path, bookmarkBuffer.Base(), bookmarkBuffer.TellPut(), false);
-		DemRecMsg(Color(255, 165, 0, 255), "[Speedrun] Bookmarked!\n");
+		// Print to file, let use know it was successful and play a sound
+		filesystem->AsyncAppend(path, bookmarkBuffer, bookmarkStrLen, false);
+		filesystem->AsyncFinishAllWrites();
+		DemRecMsgInfo("Bookmarked!\n");
 		soundEngine->EmitAmbientSound(BOOKMARK_SOUND_FILE, DEFAULT_SOUND_PACKET_VOLUME);
-
 	}
 }
 #endif
@@ -540,11 +534,11 @@ CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
 {
 	if (recordMode == DEMREC_DISABLED)
 	{
-		DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] No speedrun in progress.\n");
+		DemRecMsgWarning("No speedrun in progress.\n");
 	}
 	else
 	{
-		DemRecMsg(Color(0, 255, 0, 255), "[Speedrun] Speedrun will STOP now...\n");
+		DemRecMsgSuccess("Speedrun will STOP now...\n");
 
 		lastMapName = currentMapName;
 
@@ -557,7 +551,7 @@ CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
 		{
 			// Path to default directory
 			char path[MAX_PATH] = {};
-			Q_snprintf(path, MAX_PATH, "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
+			Q_snprintf(path, sizeof(path) / sizeof(char), "%sspeedrun_democrecord_resume_info.txt", speedrun_dir.GetString());
 
 			// Delete resume file
 			filesystem->RemoveFile(path, "MOD");
@@ -569,5 +563,5 @@ CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
 
 CON_COMMAND(speedrun_version, "prints the version of the empty plugin")
 {
-	Msg("Version:0.0.6.1\n");
+	Msg("Version:0.0.6.2\n");
 }

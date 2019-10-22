@@ -37,7 +37,7 @@ RE_QUOTE_GROUP = re.compile(r"[0-9]:+[\t\s]+\"([^\"]+)\"")
 SPEEDRUN_DEMORECORD_DEMO_FOLDER: str = "./integration_tests/"
 SPEEDRUN_DEMORECORD_DESCRIPTION: str = "Speedrun Demo Record, Maxx"
 SPEEDRUN_DEMORECORD_PLUGIN_NAME: str = "speedrun_demorecord"
-SPEEDRUN_DEMORECORD_VERSION: str = "Version:0.0.6.1"
+SPEEDRUN_DEMORECORD_VERSION: str = "Version:0.0.6.2"
 
 
 def get_console_output(source_game: SourceEngineGame):

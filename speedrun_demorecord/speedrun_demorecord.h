@@ -21,9 +21,15 @@
 
 // Utility Macros
 #if defined(SSDK2007) || defined(SSDK2013)
-#define DemRecMsg(color, msg, ...) (ConColorMsg(color, msg, __VA_ARGS__))
+#define DemRecMsg(color, msg, ...) (ConColorMsg(color, "[Speedrun] " msg, __VA_ARGS__))
+#define DemRecMsgSuccess(msg, ...) (DemRecMsg(Color(0, 255, 0, 255), msg, __VA_ARGS__))
+#define DemRecMsgWarning(msg, ...) (DemRecMsg(Color(255, 87, 87, 255), msg, __VA_ARGS__))
+#define DemRecMsgInfo(msg, ...) (DemRecMsg(Color(255, 165, 0, 255), msg, __VA_ARGS__))
 #else
 #define DemRecMsg(color, msg, ...) (Msg(msg, __VA_ARGS__))
+#define DemRecMsgSuccess(msg, ...) (Msg(msg, __VA_ARGS__))
+#define DemRecMsgWarning(msg, ...) (Msg(msg, __VA_ARGS__))
+#define DemRecMsgInfo(msg, ...) (Msg(msg, __VA_ARGS__))
 #endif
 
 // Common command size
@@ -106,11 +112,6 @@ std::string lastMapName;
 std::string currentMapName;
 char sessionDir[SESSION_DIR_SIZE] = {};
 char currentDemoName[DEMO_NAME_SIZE] = {};
-CUtlBuffer resumeBuffer;
-
-#ifdef SSDK2013
-CUtlBuffer bookmarkBuffer;
-#endif
 
 // Function protos
 void findFirstMap();
