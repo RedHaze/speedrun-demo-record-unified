@@ -53,7 +53,8 @@ def get_demo_tick_count(demo_path: str) -> Optional[int]:
                 tick = tmp_tick
 
             if dem_msg in DEM_MSG_DATA:
-                if dem_msg == DemMsgType.Packet or dem_msg == DemMsgType.Signon:
+                if dem_msg == DemMsgType.Packet or \
+                   dem_msg == DemMsgType.Signon:
                     fd.read(0x54)
                 elif dem_msg == DemMsgType.UserCmd:
                     fd.read(0x4)

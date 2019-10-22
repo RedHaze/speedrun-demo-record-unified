@@ -6,6 +6,8 @@ Tests:
 * Ensure demos don't crash on playback
 
 Future Tests:
+* Fixed integration test for hl2-oe
+* Portal release day version
 * Ensure teleportation doesn't occur when spamming save commands during load
   when speedrun is active
 * See if demos have timing similar to engine auto-record through map
@@ -55,27 +57,25 @@ def setup_teardown(request) -> Iterable[SourceEngineGame]:
     # Fail test if game not found
     if not os.path.isfile(source_game.exe_path):
         pytest.fail(
-            f"game exe not found for \"{source_game.game_tag}\", expected it to be at \"{source_game.exe_path}\"."
-        )
+            f"game exe not found for \"{source_game.game_tag}\", expected it "
+            f"to be at \"{source_game.exe_path}\".")
 
     # Fail test if speedrun_demorecord is not deployed
     if not os.path.isfile(source_game.plugin_path):
         pytest.fail(
-            f"speedrun_demorecord not deployed to \"{source_game.game_dir}\", be sure to build via solution first!"
-        )
+            f"speedrun_demorecord not deployed to \"{source_game.game_dir}\","
+            " be sure to build via solution first!")
 
     # Attempt to setup according to layout.ini
     files_list: List[str] = source_game.test_data_file_list
     if not files_list:
-        pytest.fail(
-            f"failed to parse test data layout from \"{source_game.test_data_dir}\"."
-        )
+        pytest.fail("failed to parse test data layout from "
+                    f"\"{source_game.test_data_dir}\".")
 
     # Need playback cfg
     if not source_game.test_data_playback_cfg_path:
-        pytest.fail(
-            f"no playback cfg found in test data layout from \"{source_game.test_data_dir}\"."
-        )
+        pytest.fail("no playback cfg found in test data layout from "
+                    f"\"{source_game.test_data_dir}\".")
 
     # Ensure speedrun_demorecord won't auto-load first
     # Warn user if more than one plugin is loaded
@@ -89,7 +89,8 @@ def setup_teardown(request) -> Iterable[SourceEngineGame]:
     plugin_print_result: List[str] = RE_LOADED_PLUGINS.findall(
         con_log_contents)
 
-    # There should only be one plugin list associated with one call to plugin_print
+    # There should only be one plugin list associated with one call to
+    # plugin_print
     assert len(plugin_print_result) == 1
 
     loaded_plugins: List[str] = list(
@@ -101,13 +102,14 @@ def setup_teardown(request) -> Iterable[SourceEngineGame]:
     if len(loaded_plugins_parsed) != 0:
         if SPEEDRUN_DEMORECORD_DESCRIPTION in loaded_plugins_parsed:
             pytest.fail(
-                f"speedrun_demorecord is being automatically loaded for \"{source_game.game_tag}\", please remove the VDF file so the older version does not load."
-            )
+                "speedrun_demorecord is being automatically loaded for "
+                f"\"{source_game.game_tag}\", please remove the VDF file so "
+                "the older version does not load.")
         else:
             warnings.warn(
                 UserWarning(
-                    f"other plugins are being automatically loaded which may cause integration tests to fail: {loaded_plugins}"
-                ))
+                    "other plugins are being automatically loaded which may "
+                    f"cause integration tests to fail: {loaded_plugins}"))
 
     # Copy files
     for file_path in cast(List[str], files_list):
@@ -151,15 +153,10 @@ def test_demo_playback_doesnt_crash(setup_teardown) -> None:
     # game's directory. God forbid someone actually records demos to this dir.
     game_srdf: str = os.path.abspath(
         os.path.join(source_game.game_dir, SPEEDRUN_DEMORECORD_DEMO_FOLDER))
-    # Attempt demo cleanup after test is done
-    # Don't clean it up on failure so we can repro the demo crash
+
+    # Clean demos on test start only on passing test finish
     if os.path.isdir(game_srdf):
         shutil.rmtree(game_srdf)
-
-    # if os.path.isdir(game_srdf):
-    #     pytest.fail(
-    #         f"the folder \"{game_srdf}\" already exists, please review the contents and remove before running integration tests."
-    #     )
 
     # Load the plugin
     # Set speedrun_dir to something like ./integration_test
@@ -232,10 +229,11 @@ def test_demo_playback_doesnt_crash(setup_teardown) -> None:
         # Construct VDM files to play demos in sequence
         construct_vdm(demo_abspath, next_demo_rel_path)
 
-    # TODO: Don't load speedrun_demorecord plugin for playback to detect if any speedrun_demorecord
-    # commands were executed during playback. Parameterize that? Want to make sure with plugin loaded
-    # can still playback demos...
-    # Construct new arguments.
+    # TODO: Don't load speedrun_demorecord plugin for playback to detect if
+    # any speedrun_demorecord commands were executed during playback.
+    # Parameterize that? Want to make sure with plugin loaded can still
+    # playback demos...
+
     # Launch game again and play all recorded demos at high speed
     # Demos will playback in the order they were discovered above.
     # Play just the first demo in the sequence since others will be chained

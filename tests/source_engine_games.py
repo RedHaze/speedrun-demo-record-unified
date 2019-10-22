@@ -89,8 +89,8 @@ class SourceEngineGame(object):
                             abs_file_path) and not os.path.isfile(
                                 abs_file_path):
                         raise Exception(
-                            f"the file \"{abs_file_path}\" does not exist as defined in \"{layout_path}\"."
-                        )
+                            f"the file \"{abs_file_path}\" does not exist as "
+                            f"defined in \"{layout_path}\".")
 
                     # Playback config
                     if k_v_pair[0] == 'playback':
@@ -129,7 +129,7 @@ SUPPORTED_GAMES: List[SourceEngineGame] = [
                          "d1_canals_08.dem", "d2_coast_01.dem"
                      ],
                      rel_plugin_path=".\\speedrun_demorecord.dll"),
-    #This actually doesn't work because wait prevents stuff from executing :(
+    # This actually doesn't work because wait prevents stuff from executing :(
     # SourceEngineGame(game_tag='hl2_2006',
     #                  game_dir_env_var='GAME_2006_HL2_DIR',
     #                  exe_filename='hl2.exe',
