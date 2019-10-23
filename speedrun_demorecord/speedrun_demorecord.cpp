@@ -597,5 +597,5 @@ CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
 
 CON_COMMAND(speedrun_version, "prints the version of the empty plugin")
 {
-    Msg("Version:0.0.6.2\n");
+    Msg("Version:0.0.6.3\n");
 }
