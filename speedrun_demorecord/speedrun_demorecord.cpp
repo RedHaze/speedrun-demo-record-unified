@@ -260,6 +260,10 @@ PLUGIN_RESULT CSpeedrunDemoRecord::ClientConnect(bool* bAllowConnect,
 
                     lastMapName = curMap;
                 }
+
+                // Always ensure path exists before attempting to record
+                // Otherwise, record command will fail!
+                createDirIfNonExistant(sessionDir);
                 Q_snprintf(command, sizeof(command) / sizeof(char), "record %s%s\n", sessionDir, currentDemoName);
                 clientEngine->ClientCmd(command);
             }
@@ -284,7 +288,7 @@ int demoExists(const char* curMap)
     FileFindHandle_t findHandle;
     int retriesTmp = 0;
 
-    char path[MAX_PATH];
+    char path[MAX_PATH] = {};
     Q_snprintf(path, sizeof(path) / sizeof(char), "%s%s*", sessionDir, curMap);
 
     const char* pFilename = filesystem->FindFirstEx(path, "MOD", &findHandle);
@@ -299,13 +303,17 @@ int demoExists(const char* curMap)
 }
 
 //---------------------------------------------------------------------------------
-// Purpose: checks if chosen directory exists, if not attempts to create folder (please dont hate me noobest)
+// Purpose: checks if chosen directory exists, if not attempts to create folder
 //---------------------------------------------------------------------------------
-void pathExists()
+void createDirIfNonExistant(const char* modRelativePath)
 {
-    if (!filesystem->IsDirectory(speedrun_dir.GetString()), "MOD")
+    if (!modRelativePath)
+        return;
+
+    if (!filesystem->IsDirectory(modRelativePath), "MOD")
     {
-        char* path = const_cast<char*>(speedrun_dir.GetString());
+        char path[MAX_PATH] = {};
+        Q_strncpy(path, modRelativePath, sizeof(path) / sizeof(char));
         Q_FixSlashes(path);
         filesystem->CreateDirHierarchy(path, "DEFAULT_WRITE_PATH");
     }
@@ -463,9 +471,6 @@ CON_COMMAND_F(speedrun_segment, "segmenting mode", FCVAR_DONTRECORD)
         // Let the user know
         DemRecMsgSuccess("Segment demo record activated, please reload/load a map to start recording...\n");
 
-        // Create path if it doesnt exist
-        pathExists();
-
         // Init segment recording mode
         recordMode = DEMREC_SEGMENTED;
         Q_snprintf(sessionDir, SESSION_DIR_SIZE, "%s", speedrun_dir.GetString());
@@ -529,7 +534,7 @@ CON_COMMAND_F(speedrun_bookmark, "create a bookmark for those ep0ch moments.", F
         ConvertTimeToLocalTime(time(NULL), ltime);
 
         // Clear buffer and place a return for ease of reading
-        char bookmarkBuffer[4096];
+        char bookmarkBuffer[4096] = {};
         Q_snprintf(bookmarkBuffer,
                    sizeof(bookmarkBuffer) / sizeof(char),
                    "[%04i/%02i/%02i %02i:%02i] demo: %s%s\r\n\t\t   tick: %d\r\n",
