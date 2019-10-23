@@ -25,7 +25,7 @@
 #define DemRecMsgWarning(msg, ...) (DemRecMsg(Color(255, 87, 87, 255), msg, __VA_ARGS__))
 #define DemRecMsgInfo(msg, ...) (DemRecMsg(Color(255, 165, 0, 255), msg, __VA_ARGS__))
 #else
-#define DemRecMsg(color, msg, ...) (Msg(msg, __VA_ARGS__))
+#define DemRecMsg(color, msg, ...) (Msg("[Speedrun] " msg, __VA_ARGS__))
 #define DemRecMsgSuccess(msg, ...) (Msg(msg, __VA_ARGS__))
 #define DemRecMsgWarning(msg, ...) (Msg(msg, __VA_ARGS__))
 #define DemRecMsgInfo(msg, ...) (Msg(msg, __VA_ARGS__))
