@@ -20,7 +20,7 @@ There have been many updates to Source Engine since its release in 2004. Therefo
     ![steampipe_console_version.PNG](./docs/images/steampipe_console_version.PNG)
     * No need to worry about specific numbers here, if the output looks like this it's most likely SteamPipe.
 
-2. Download the correct DLL from the [releases](https://github.com/RedHaze/speedrun-demo-record-unified/releases) page according to this matrix. A **bold face** entry denotes a game that hasn't yet been tested but *should* work fine. An X denotes a game which hasn't been tested and/or is generally not used for speedrunning.
+2. Download the correct DLL from the [releases](https://github.com/RedHaze/speedrun-demo-record-unified/releases) page according to this matrix. A **bold face** entry denotes a game that hasn't yet been tested but *should* work fine. An X denotes a game revision which hasn't been tested, is generally not used for speedrunning, and/or does not exist.
 
 | Version        | Half-Life 2                      | Half-Life 2: Episode 1           | Half-Life 2: Episode 2           | Portal                       |
 |----------------|----------------------------------|----------------------------------|----------------------------------|------------------------------|
