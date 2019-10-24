@@ -1,10 +1,6 @@
 # Build files
-Debug 2006 - */
-Debug 2007 - */
-Debug 2013 - */
-Release 2006 - */
-Release 2007 - */
-Release 2013 - */
+Debug */
+Release */
 
 # Python stuff
 __pycache__/

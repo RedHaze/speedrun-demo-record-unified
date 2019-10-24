@@ -75,4 +75,18 @@
     <LocalDebuggerCommandArguments>-game portal -novid -allowdebug +plugin_load speedrun_demorecord +speedrun_dir ./test/ +speedrun_map testchmb_a_07</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(GAME_PORTAL_DIR)\portal</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
+  
+  <!-- Portal 3420 Debug Settings -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 2007 3420 - Portal|Win32'">
+    <LocalDebuggerCommand>$(GAME_PORTAL_DIR)\hl2.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-game portal -novid -allowdebug +plugin_load speedrun_demorecord +speedrun_dir ./test/ +speedrun_map testchmb_a_07</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(GAME_PORTAL_DIR)\portal</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release 2007 3420 - Portal|Win32'">
+    <LocalDebuggerCommand>$(GAME_PORTAL_DIR)\hl2.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-game portal -novid -allowdebug +plugin_load speedrun_demorecord +speedrun_dir ./test/ +speedrun_map testchmb_a_07</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(GAME_PORTAL_DIR)\portal</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
 </Project>

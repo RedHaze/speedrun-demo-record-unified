@@ -15,7 +15,8 @@ set GAME_2013_HL2_DIR=C:\Program Files (x86)\Steam\steamapps\common\Half-Life 2
 set GAME_2007_HL2_DIR=C:\SourceUnpack\hl2_vanilla
 set GAME_2006_HL2_DIR=C:\SourceUnpack\Half-Life 2 2009
 set GAME_2013_PORTAL_DIR=E:\SteamLibrary\steamapps\common\Portal
-set GAME_2007_PORTAL_DIR=C:\SourceUnpack\Portal
+set GAME_2007_PORTAL_DIR=C:\SourceUnpack\hl2_vanilla
+set GAME_2007_PORTAL_3420_DIR=C:\SourceUnpack\Portal
 set GAME_2007_EP2_DIR=C:\SourceUnpack\ep2
 
 REM -- DO NOT EDIT BELOW THIS LINE --

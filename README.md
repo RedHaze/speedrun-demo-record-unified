@@ -57,3 +57,10 @@ There have been many updates to Source Engine since its release in 2004. Therefo
 
 ## Building & Running Tests
 *Coming soon*
+
+## Credits
+* @Jukspa
+* @YaLTeR
+* @SizzlingCalamari
+* @Gocnak
+* @fatalis
