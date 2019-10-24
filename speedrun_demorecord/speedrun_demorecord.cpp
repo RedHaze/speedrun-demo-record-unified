@@ -387,7 +387,7 @@ CON_COMMAND_F(speedrun_start, "starts run", FCVAR_DONTRECORD)
     else
     {
         // No map or save set? Throw error
-        if (!FStrEq(speedrun_map.GetString(), "") && !FStrEq(speedrun_save.GetString(), ""))
+        if (FStrEq(speedrun_map.GetString(), "") && FStrEq(speedrun_save.GetString(), ""))
         {
             DemRecMsgWarning("Please set a map with speedrun_map or save with speedrun_save first.\n");
         }
@@ -597,5 +597,5 @@ CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
 
 CON_COMMAND(speedrun_version, "prints the version of the empty plugin")
 {
-    Msg("Version:0.0.6.3\n");
+    Msg("Version:0.0.6.4\n");
 }

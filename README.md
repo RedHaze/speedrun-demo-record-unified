@@ -57,12 +57,34 @@ There have been many updates to Source Engine since its release in 2004. Therefo
 
 5. To load the plugin as startup automatically, create the file `autoexec.cfg` in the game's config folder (e.g. `portal/cfg/autoexec.cfg`) and add the same `plugin_load` line used in step 4. This config file will automatically execute whenever you launch the game.
 
+## Using `speedrun_demorecord`
+After loading the plugin, the following console commands will become available:
+
+* `speedrun_map`
+  * When `speedrun_start` is called, the map given in this convar will be loaded and autorecording will start.
+* `speedrun_dir`
+  * Sets the directory of where demos will record to. By default, it's the game's root directory. To set a custom directory relative to the game's root directory, set this convar appropriately. The `speedrun_dir` MUST reside in the game's root directory.
+* `speedrun_start`
+  * Starts the map as set by `speedrun_map` *or* starts from a save as set by `speedrun_save` and enables autorecord. Demos will now record after every new map, death, reload, etc. Autorecord will stay enabled until `speedrun_stop` is executed.
+* `speedrun_stop`
+  * Disables autorecord and stops the currently recording demo.
+* `speedrun_segment`
+  * Records a demo after every death, reload, map change, etc with the same name. The demo will be overwritten after every reload.
+* `speedrun_resume`
+  * If your game crashes during a run, launch the game, execute this command, then reload your last save. Auto record will re-activate.
+* `speedrun_bookmark`
+  * While autorecord is enabled, you can call this command to have the current tick of the demo being recorded saved to the file `speedrun_democrecord_bookmarks.txt` located in `speedrun_dir`.
+* `speedrun_save`
+  * If empty, `speedrun_start` will start using the map set by `speedrun_map`. If `speedrun_save` is specified, `speedrun_start` will start using the specified save instead of a map. If the specified save does not exist, the speedrun will start using `speedrun_map`. The specified save must exist in the `SAVE` folder.
+* `speedrun_version`
+  * Prints plugin version to console.
+
 ## Building & Running Tests
 *Coming soon*
 
 ## Credits
-* @Jukspa
-* @YaLTeR
-* @SizzlingCalamari
-* @Gocnak
-* @fatalis
+* [Jukspa](https://github.com/Jukspa)
+* [YaLTeR](https://github.com/YaLTeR)
+* [SizzlingCalamari](https://github.com/SizzlingCalamari)
+* [Gocnak](https://github.com/Gocnak)
+* [fatalis](https://github.com/fatalis)
