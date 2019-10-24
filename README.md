@@ -1,7 +1,7 @@
-# speedrun-demorecord
+# speedrun_demorecord
 
 ## Summary
-`speedrun-demorecord` is a simple plugin for games running on the Source Engine used to automatically record demos through map changes, save/loads, and deaths.
+`speedrun_demorecord` is a simple plugin for games running on the Source Engine used to automatically record demos through map changes, save/loads, and deaths.
 
 ## Supported Engines
 There have been many updates to Source Engine since its release in 2004. Therefore, only widely available & used versions of Source Engine are supported. Please refer to the matrix below for supported games/engines.
@@ -20,9 +20,9 @@ There have been many updates to Source Engine since its release in 2004. Therefo
     ![steampipe_console_version.PNG](./docs/images/steampipe_console_version.PNG)
     * No need to worry about specific numbers here, if the output looks like this it's most likely SteamPipe.
 
-2. Download the correct DLL from the [releases|https://github.com/RedHaze/speedrun-demo-record-unified/releases] page according to this matrix. A **bold face** entry denotes a game that hasn't yet been tested but *should* work fine. An X denotes a game which hasn't been tested and/or is generally not used for speedrunning.
+2. Download the correct DLL from the [releases](https://github.com/RedHaze/speedrun-demo-record-unified/releases) page according to this matrix. A **bold face** entry denotes a game that hasn't yet been tested but *should* work fine. An X denotes a game which hasn't been tested and/or is generally not used for speedrunning.
 
-| Engine Version | Half-Life 2                      | Half-Life 2: Episode One         | Half-Life 2: Episode Two         | Portal                       |
+| Version        | Half-Life 2                      | Half-Life 2: Episode 1           | Half-Life 2: Episode 2           | Portal                       |
 |----------------|----------------------------------|----------------------------------|----------------------------------|------------------------------|
 | 3420           | X                                | X                                | X                                | speedrun_demorecord-2007.dll |
 | 4044           | **speedrun_demorecord-2006.dll** | X                                | X                                | X                            |
@@ -56,4 +56,4 @@ There have been many updates to Source Engine since its release in 2004. Therefo
 5. To load the plugin as startup automatically, create the file `autoexec.cfg` in the game's config folder (e.g. `portal/cfg/autoexec.cfg`) and add the same `plugin_load` line used in step 4. This config file will automatically execute whenever you launch the game. Feel free to 
 
 ## Building & Running Tests
-~Coming soon~
+*Coming soon*

@@ -886,7 +886,10 @@ exit 1
 
 echo Copying DLL to Game Directory...
 copy "$(TargetDir)$(TargetFileName)" "$(LocalDebuggerWorkingDirectory)\$(TargetFileName)"
-</Command>
+
+
+if not exist "$(SolutionDir)bin\" mkdir "$(SolutionDir)bin\"
+copy /Y "$(TargetPath)" "$(SolutionDir)bin\$(TargetName)-2013$(TargetExt)"</Command>
     </PostBuildEvent>
     <CustomBuildStep>
     </CustomBuildStep>
@@ -981,7 +984,9 @@ exit 1
 
 echo Copying DLL to Game Directory...
 copy "$(TargetDir)$(TargetFileName)" "$(LocalDebuggerWorkingDirectory)\$(TargetFileName)"
-</Command>
+
+if not exist "$(SolutionDir)bin\" mkdir "$(SolutionDir)bin\"
+copy /Y "$(TargetPath)" "$(SolutionDir)bin\$(TargetName)-2013$(TargetExt)"</Command>
     </PostBuildEvent>
     <CustomBuildStep />
   </ItemDefinitionGroup>
@@ -1075,7 +1080,9 @@ exit 1
 
 echo Copying DLL to Game Directory...
 copy "$(TargetDir)$(TargetFileName)" "$(LocalDebuggerWorkingDirectory)\$(TargetFileName)"
-</Command>
+
+if not exist "$(SolutionDir)bin\" mkdir "$(SolutionDir)bin\"
+copy /Y "$(TargetPath)" "$(SolutionDir)bin\$(TargetName)-2007$(TargetExt)"</Command>
     </PostBuildEvent>
     <CustomBuildStep />
   </ItemDefinitionGroup>
@@ -1169,7 +1176,9 @@ exit 1
 
 echo Copying DLL to Game Directory...
 copy "$(TargetDir)$(TargetFileName)" "$(LocalDebuggerWorkingDirectory)\$(TargetFileName)"
-</Command>
+
+if not exist "$(SolutionDir)bin\" mkdir "$(SolutionDir)bin\"
+copy /Y "$(TargetPath)" "$(SolutionDir)bin\$(TargetName)-2007$(TargetExt)"</Command>
     </PostBuildEvent>
     <CustomBuildStep />
   </ItemDefinitionGroup>
@@ -1263,7 +1272,9 @@ exit 1
 
 echo Copying DLL to Game Directory...
 copy "$(TargetDir)$(TargetFileName)" "$(LocalDebuggerWorkingDirectory)\$(TargetFileName)"
-</Command>
+
+if not exist "$(SolutionDir)bin\" mkdir "$(SolutionDir)bin\"
+copy /Y "$(TargetPath)" "$(SolutionDir)bin\$(TargetName)-2007$(TargetExt)"</Command>
     </PostBuildEvent>
     <CustomBuildStep />
   </ItemDefinitionGroup>
@@ -1357,7 +1368,9 @@ exit 1
 
 echo Copying DLL to Game Directory...
 copy "$(TargetDir)$(TargetFileName)" "$(LocalDebuggerWorkingDirectory)\..\bin\$(TargetFileName)"
-</Command>
+
+if not exist "$(SolutionDir)bin\" mkdir "$(SolutionDir)bin\"
+copy /Y "$(TargetPath)" "$(SolutionDir)bin\$(TargetName)-2006$(TargetExt)"</Command>
     </PostBuildEvent>
     <CustomBuildStep />
   </ItemDefinitionGroup>
