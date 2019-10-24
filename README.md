@@ -53,7 +53,9 @@ There have been many updates to Source Engine since its release in 2004. Therefo
 
     You should see the following output in console if the plugin loaded successfully:
 
-5. To load the plugin as startup automatically, create the file `autoexec.cfg` in the game's config folder (e.g. `portal/cfg/autoexec.cfg`) and add the same `plugin_load` line used in step 4. This config file will automatically execute whenever you launch the game. Feel free to 
+    ![plugin_loaded.PNG](./docs/images/plugin_loaded.PNG)
+
+5. To load the plugin as startup automatically, create the file `autoexec.cfg` in the game's config folder (e.g. `portal/cfg/autoexec.cfg`) and add the same `plugin_load` line used in step 4. This config file will automatically execute whenever you launch the game.
 
 ## Building & Running Tests
 *Coming soon*
