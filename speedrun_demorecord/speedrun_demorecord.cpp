@@ -166,8 +166,7 @@ void CSpeedrunDemoRecord::LevelInit(char const* pMapName)
 {
     if (recordMode != DEMREC_DISABLED)
     {
-        std::string str(pMapName);
-        currentMapName = str;
+        currentMapName = pMapName;
     }
 }
 
@@ -182,12 +181,10 @@ void CSpeedrunDemoRecord::ServerActivate(edict_t* pEdictList, int edictCount, in
 //---------------------------------------------------------------------------------
 void CSpeedrunDemoRecord::LevelShutdown(void) // !!!!this can get called multiple times per map change
 {
-    if (recordMode == DEMREC_STANDARD)
+    if (recordMode == DEMREC_STANDARD && clientEngine->IsPlayingDemo() == false &&
+        clientEngine->IsRecordingDemo() == true)
     {
-        if (clientEngine->IsPlayingDemo() == false && clientEngine->IsRecordingDemo() == true)
-        {
-            clientEngine->ClientCmd("stop");
-        }
+        clientEngine->ClientCmd("stop");
     }
 }
 
@@ -216,57 +213,50 @@ PLUGIN_RESULT CSpeedrunDemoRecord::ClientConnect(bool* bAllowConnect,
                                                  char* reject,
                                                  int maxrejectlen)
 {
-    if (recordMode != DEMREC_DISABLED)
+    if (recordMode != DEMREC_DISABLED && clientEngine->IsPlayingDemo() == false)
     {
-        if (clientEngine->IsPlayingDemo() == false)
+        std::string& curMap = currentMapName;
+
+        if (curMap.find("background") == -1)
         {
-            std::string& curMap = currentMapName;
+            // Max path length is 32000 but 256 is easier on RAM, I read that somewhere not sure if it's true tho.
+            // Might want to increase if people have problems...
+            char command[CMD_SIZE] = {};
 
-            if (curMap.find("background") == -1)
+            // Q: Why does game crash when I record a demo?
+            // A: Strange character/letters in path OR your path exceeds 256 characters, windows max is 320.
+            if (lastMapName == curMap && recordMode == DEMREC_STANDARD)
             {
-                // Max path length is 32000 but 256 is easier on RAM, I read that somewhere not sure if it's true tho.
-                // Might want to increase if people have problems...
-                char command[CMD_SIZE] = {};
-
-                // Q: Why does game crash when I record a demo?
-                // A: Strange character/letters in path OR your path exceeds 256 characters, windows max is 320.
-                if (lastMapName == curMap && recordMode == DEMREC_STANDARD)
+                retries++;
+                Q_snprintf(currentDemoName, DEMO_NAME_SIZE, "%s_%d", curMap.c_str(), retries);
+            }
+            else
+            {
+                int storedretries = 0;
+                if (recordMode != DEMREC_SEGMENTED)
                 {
-                    retries++;
+                    storedretries = demoExists(curMap.c_str());
+                }
+
+                if (storedretries != 0)
+                {
+                    retries = storedretries;
                     Q_snprintf(currentDemoName, DEMO_NAME_SIZE, "%s_%d", curMap.c_str(), retries);
                 }
                 else
                 {
-                    int storedretries;
-                    if (recordMode == DEMREC_SEGMENTED)
-                    {
-                        storedretries = 0;
-                    }
-                    else
-                    {
-                        storedretries = demoExists(curMap.c_str());
-                    }
-
-                    if (storedretries != 0)
-                    {
-                        retries = storedretries;
-                        Q_snprintf(currentDemoName, DEMO_NAME_SIZE, "%s_%d", curMap.c_str(), retries);
-                    }
-                    else
-                    {
-                        retries = 0;
-                        Q_snprintf(currentDemoName, DEMO_NAME_SIZE, "%s", curMap.c_str());
-                    }
-
-                    lastMapName = curMap;
+                    retries = 0;
+                    Q_snprintf(currentDemoName, DEMO_NAME_SIZE, "%s", curMap.c_str());
                 }
 
-                // Always ensure path exists before attempting to record
-                // Otherwise, record command will fail!
-                createDirIfNonExistant(sessionDir);
-                Q_snprintf(command, sizeof(command) / sizeof(char), "record %s%s\n", sessionDir, currentDemoName);
-                clientEngine->ClientCmd(command);
+                lastMapName = curMap;
             }
+
+            // Always ensure path exists before attempting to record
+            // Otherwise, record command will fail!
+            createDirIfNonExistant(sessionDir);
+            Q_snprintf(command, sizeof(command) / sizeof(char), "record %s%s\n", sessionDir, currentDemoName);
+            clientEngine->ClientCmd(command);
         }
     }
     return PLUGIN_CONTINUE;
@@ -277,10 +267,14 @@ PLUGIN_RESULT CSpeedrunDemoRecord::ClientConnect(bool* bAllowConnect,
 //---------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------
-// Purpose: checks if chosen directory exists, if not attempts to create folder (please dont hate me noobest)
+// Purpose: checks if demo exists for the corresponding map and returns its current
+//			increment.
 //---------------------------------------------------------------------------------
 int demoExists(const char* curMap)
 {
+    if (!curMap)
+        return -1;
+
     // 1) Search for demos with map name in filename
     // 2) If none found, return 0
     // 3) If found, check for an _#, if none return a 1, else if # > 1, add 1 to that number and return #+1
@@ -361,13 +355,17 @@ void GetDateAndTime(struct tm& ltime)
     // get the time as an int64
     time_t t = time(NULL);
 
-    ConvertTimeToLocalTime(t, ltime);
-}
-
-void ConvertTimeToLocalTime(const time_t& t, struct tm& ltime)
-{
     // convert it to a struct of time values
-    ltime = *localtime(&t);
+    tm* ltime_ptr = localtime(&t);
+    if (!ltime_ptr)
+    {
+        DemRecMsgWarning("Failed to obtain date & time!\n");
+        ltime.tm_year = 0;
+        ltime.tm_mon = 0;
+        return;
+    }
+
+    ltime = *ltime_ptr;
 
     // normalize the year and month
     ltime.tm_year = ltime.tm_year + 1900;
@@ -401,8 +399,8 @@ CON_COMMAND_F(speedrun_start, "starts run", FCVAR_DONTRECORD)
             lastMapName = "";
 
             // Get current time
-            struct tm ltime;
-            ConvertTimeToLocalTime(time(NULL), ltime);
+            struct tm ltime = {};
+            GetDateAndTime(ltime);
 
             // Parse time
             char tmpDir[32] = {};
@@ -428,7 +426,7 @@ CON_COMMAND_F(speedrun_start, "starts run", FCVAR_DONTRECORD)
             char path[MAX_PATH] = {};
             Q_snprintf(path,
                        sizeof(path) / sizeof(char),
-                       "%sspeedrun_democrecord_resume_info.txt",
+                       "%sspeedrun_demorecord_resume_info.txt",
                        speedrun_dir.GetString());
 
             // Print to file, let us know it was successful and play a silly sound :P
@@ -485,7 +483,7 @@ CON_COMMAND_F(speedrun_resume, "resume a speedrun after a crash", FCVAR_DONTRECO
         char path[MAX_PATH] = {};
         Q_snprintf(path,
                    sizeof(path) / sizeof(char),
-                   "%sspeedrun_democrecord_resume_info.txt",
+                   "%sspeedrun_demorecord_resume_info.txt",
                    speedrun_dir.GetString());
         FileHandle_t resumeFile = filesystem->Open(path, "r", "MOD");
         if (resumeFile)
@@ -507,7 +505,7 @@ CON_COMMAND_F(speedrun_resume, "resume a speedrun after a crash", FCVAR_DONTRECO
         }
         else
         {
-            DemRecMsgWarning("Error opening speedrun_democrecord_resume_info.txt, cannot resume speedrun!\n");
+            DemRecMsgWarning("Error opening speedrun_demorecord_resume_info.txt, cannot resume speedrun!\n");
         }
     }
     else
@@ -530,8 +528,8 @@ CON_COMMAND_F(speedrun_bookmark, "create a bookmark for those ep0ch moments.", F
     else
     {
         // get local time
-        struct tm ltime;
-        ConvertTimeToLocalTime(time(NULL), ltime);
+        struct tm ltime = {};
+        GetDateAndTime(ltime);
 
         // Clear buffer and place a return for ease of reading
         char bookmarkBuffer[4096] = {};
@@ -546,13 +544,13 @@ CON_COMMAND_F(speedrun_bookmark, "create a bookmark for those ep0ch moments.", F
                    sessionDir,
                    currentDemoName,
                    clientEngine->GetDemoRecordingTick());
-        int bookmarkStrLen = Q_strlen(bookmarkBuffer);
 
         // Path to default directory
         char path[MAX_PATH] = {};
-        Q_snprintf(path, sizeof(path) / sizeof(char), "%sspeedrun_democrecord_bookmarks.txt", speedrun_dir.GetString());
+        Q_snprintf(path, sizeof(path) / sizeof(char), "%sspeedrun_demorecord_bookmarks.txt", speedrun_dir.GetString());
 
         // Print to file, let use know it was successful and play a sound
+        int bookmarkStrLen = Q_strlen(bookmarkBuffer);
         filesystem->AsyncAppend(path, bookmarkBuffer, bookmarkStrLen, false);
         filesystem->AsyncFinishAllWrites();
         DemRecMsgInfo("Bookmarked!\n");
@@ -584,7 +582,7 @@ CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
             char path[MAX_PATH] = {};
             Q_snprintf(path,
                        sizeof(path) / sizeof(char),
-                       "%sspeedrun_democrecord_resume_info.txt",
+                       "%sspeedrun_demorecord_resume_info.txt",
                        speedrun_dir.GetString());
 
             // Delete resume file
@@ -597,5 +595,5 @@ CON_COMMAND_F(speedrun_stop, "stops run", FCVAR_DONTRECORD)
 
 CON_COMMAND(speedrun_version, "prints the version of the empty plugin")
 {
-    Msg("Version:0.0.6.4\n");
+    Msg("Version:0.0.6.5\n");
 }

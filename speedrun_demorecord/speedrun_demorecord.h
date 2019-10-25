@@ -138,5 +138,4 @@ char currentDemoName[DEMO_NAME_SIZE] = {};
 void findFirstMap();
 void createDirIfNonExistant(const char* modRelativePath);
 void GetDateAndTime(struct tm& ltime);
-void ConvertTimeToLocalTime(const time_t& t, struct tm& ltime);
 int demoExists(const char* curMap);

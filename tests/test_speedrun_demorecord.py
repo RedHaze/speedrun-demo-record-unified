@@ -12,6 +12,7 @@ Future Tests:
   when speedrun is active
 * See if demos have timing similar to engine auto-record through map
   transition.
+* Ensure demos are not overwritten when going backwards
 * speedrun_democrecord_bookmarks.txt verification
 * Long paths testing & handling
 * Unicode paths & handling
@@ -39,7 +40,7 @@ RE_QUOTE_GROUP = re.compile(r"[0-9]:+[\t\s]+\"([^\"]+)\"")
 SPEEDRUN_DEMORECORD_DEMO_FOLDER: str = "./integration_tests/"
 SPEEDRUN_DEMORECORD_DESCRIPTION: str = "Speedrun Demo Record, Maxx"
 SPEEDRUN_DEMORECORD_PLUGIN_NAME: str = "speedrun_demorecord"
-SPEEDRUN_DEMORECORD_VERSION: str = "Version:0.0.6.4"
+SPEEDRUN_DEMORECORD_VERSION: str = "Version:0.0.6.5"
 
 
 def get_console_output(source_game: SourceEngineGame):
