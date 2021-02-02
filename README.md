@@ -25,7 +25,7 @@ There have been many updates to Source Engine since its release in 2004. Therefo
 | Version        | Half-Life 2                      | Half-Life 2: Episode 1           | Half-Life 2: Episode 2           | Portal                       |
 |----------------|----------------------------------|----------------------------------|----------------------------------|------------------------------|
 | 3420           | X                                | X                                | X                                | speedrun_demorecord-2007.dll |
-| 4044           | **speedrun_demorecord-2006.dll** | X                                | X                                | X                            |
+| 4044           | **speedrun_demorecord-2006.dll** | **speedrun_demorecord-2006.dll** | X                                | X                            |
 | 4104           | X                                | X                                | speedrun_demorecord-2007.dll     | X                            |
 | 5135           | speedrun_demorecord-2007.dll     | **speedrun_demorecord-2007.dll** | **speedrun_demorecord-2007.dll** | speedrun_demorecord-2007.dll |
 | SteamPipe      | speedrun_demorecord-2013.dll     | **speedrun_demorecord-2013.dll** | **speedrun_demorecord-2013.dll** | speedrun_demorecord-2013.dll |
